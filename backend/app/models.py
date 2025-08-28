@@ -20,3 +20,8 @@ class SlideList(BaseModel):
 
     slides: list[Slide]
     latest_id: int
+
+
+class Health(BaseModel):
+    status: str
+    slides: int

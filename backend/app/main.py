@@ -23,6 +23,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.store = store
     app.state.settings = settings
 
+    def get_store() -> SlideStore:
+        return store
+
+    @app.get("/health", response_model=Health)
+    def health(store: SlideStore = Depends(get_store)) -> Health:
+        return Health(status="ok", slides=len(store))
+
     return app
 
 
