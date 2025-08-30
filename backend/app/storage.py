@@ -42,3 +42,19 @@ class SlideStore:
         self._slides: list[Slide] = []
         self._latest_id = 0
         self._load()
+
+    def _load(self) -> None:
+        if not self._index_file.exists():
+            return
+        raw = json.loads(self._index_file.read_text())
+        self._slides = [Slide.model_validate(s) for s in raw["slides"]]
+        self._latest_id = raw["latest_id"]
+
+    def _save(self) -> None:
+        data = {
+            "latest_id": self._latest_id,
+            "slides": [s.model_dump(mode="json") for s in self._slides],
+        }
+        tmp = self._index_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, indent=2))
+        os.replace(tmp, self._index_file)
