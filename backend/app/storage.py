@@ -24,3 +24,21 @@ def png_size(data: bytes) -> tuple[int, int]:
     if width == 0 or height == 0:
         raise InvalidImage("empty image")
     return width, height
+
+
+class SlideStore:
+    """Keeps slides in `root/images` and their metadata in `root/index.json`.
+
+    Ids only ever grow, so the iPad can ask for everything after the last id
+    it has seen.
+    """
+
+    def __init__(self, root: Path):
+        self.root = Path(root)
+        self.images = self.root / "images"
+        self.images.mkdir(parents=True, exist_ok=True)
+        self._index_file = self.root / "index.json"
+        self._lock = threading.Lock()
+        self._slides: list[Slide] = []
+        self._latest_id = 0
+        self._load()
