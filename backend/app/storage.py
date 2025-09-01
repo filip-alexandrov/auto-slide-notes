@@ -58,3 +58,28 @@ class SlideStore:
         tmp = self._index_file.with_suffix(".tmp")
         tmp.write_text(json.dumps(data, indent=2))
         os.replace(tmp, self._index_file)
+
+    @property
+    def latest_id(self) -> int:
+        return self._latest_id
+
+    def __len__(self) -> int:
+        return len(self._slides)
+
+    def add(self, data: bytes) -> Slide:
+        width, height = png_size(data)
+        with self._lock:
+            self._latest_id += 1
+            slide_id = self._latest_id
+            filename = f"slide_{slide_id:05d}.png"
+            (self.images / filename).write_bytes(data)
+            slide = Slide(
+                id=slide_id,
+                filename=filename,
+                width=width,
+                height=height,
+                created_at=datetime.now(timezone.utc),
+            )
+            self._slides.append(slide)
+            self._save()
+            return slide
