@@ -83,3 +83,9 @@ class SlideStore:
             self._slides.append(slide)
             self._save()
             return slide
+
+    def after(self, slide_id: int) -> list[Slide]:
+        return [s for s in self._slides if s.id > slide_id]
+
+    def get(self, slide_id: int) -> Slide | None:
+        return next((s for s in self._slides if s.id == slide_id), None)
