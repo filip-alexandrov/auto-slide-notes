@@ -30,6 +30,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def health(store: SlideStore = Depends(get_store)) -> Health:
         return Health(status="ok", slides=len(store))
 
+    @app.post("/slides", response_model=Slide, status_code=201)
+    async def upload_slide(file: UploadFile, store: SlideStore = Depends(get_store)) -> Slide:
+        data = await file.read(settings.max_upload_bytes + 1)
+        if len(data) > settings.max_upload_bytes:
+            raise HTTPException(413, "Slide is too large")
+        try:
+            slide = store.add(data)
+        except InvalidImage as e:
+            raise HTTPException(415, str(e)) from e
+        log.info("slide %d (%dx%d)", slide.id, slide.width, slide.height)
+        return slide
+
     return app
 
 
