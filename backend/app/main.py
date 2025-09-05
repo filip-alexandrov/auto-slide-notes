@@ -42,6 +42,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         log.info("slide %d (%dx%d)", slide.id, slide.width, slide.height)
         return slide
 
+    @app.get("/slides", response_model=SlideList)
+    def list_slides(
+        after: int = Query(0, ge=0), store: SlideStore = Depends(get_store)
+    ) -> SlideList:
+        return SlideList(slides=store.after(after), latest_id=store.latest_id)
+
     return app
 
 
