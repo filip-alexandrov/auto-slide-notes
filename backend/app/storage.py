@@ -89,3 +89,6 @@ class SlideStore:
 
     def get(self, slide_id: int) -> Slide | None:
         return next((s for s in self._slides if s.id == slide_id), None)
+
+    def image_path(self, slide: Slide) -> Path:
+        return self.images / slide.filename

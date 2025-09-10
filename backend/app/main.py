@@ -48,6 +48,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> SlideList:
         return SlideList(slides=store.after(after), latest_id=store.latest_id)
 
+    @app.get("/slides/{slide_id}/image")
+    def slide_image(slide_id: int, store: SlideStore = Depends(get_store)) -> FileResponse:
+        slide = store.get(slide_id)
+        if slide is None or not store.image_path(slide).exists():
+            raise HTTPException(404, "No such slide")
+        return FileResponse(store.image_path(slide), media_type="image/png")
+
     return app
 
 
