@@ -92,3 +92,13 @@ class SlideStore:
 
     def image_path(self, slide: Slide) -> Path:
         return self.images / slide.filename
+
+    def clear(self) -> int:
+        """Deletes the images but keeps counting ids from where it was."""
+        with self._lock:
+            removed = len(self._slides)
+            for slide in self._slides:
+                self.image_path(slide).unlink(missing_ok=True)
+            self._slides = []
+            self._save()
+            return removed

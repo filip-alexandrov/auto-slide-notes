@@ -55,6 +55,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(404, "No such slide")
         return FileResponse(store.image_path(slide), media_type="image/png")
 
+    @app.delete("/slides")
+    def clear_slides(store: SlideStore = Depends(get_store)) -> dict:
+        return {"removed": store.clear()}
+
     return app
 
 
