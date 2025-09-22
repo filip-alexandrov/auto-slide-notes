@@ -26,6 +26,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def get_store() -> SlideStore:
         return store
 
+    @app.middleware("http")
+    async def log_uploads(request: Request, call_next):
+        response = await call_next(request)
+        if request.method != "GET":
+            log.info("%s %s -> %s", request.method, request.url.path, response.status_code)
+        return response
+
     @app.get("/health", response_model=Health)
     def health(store: SlideStore = Depends(get_store)) -> Health:
         return Health(status="ok", slides=len(store))
