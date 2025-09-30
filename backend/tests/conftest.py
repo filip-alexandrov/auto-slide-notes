@@ -27,3 +27,18 @@ def make_png(width: int = 4, height: int = 3) -> bytes:
         + chunk(b"IDAT", zlib.compress(rows))
         + chunk(b"IEND", b"")
     )
+
+
+@pytest.fixture
+def png() -> bytes:
+    return make_png()
+
+
+@pytest.fixture
+def settings(tmp_path) -> Settings:
+    return Settings(data_dir=tmp_path, max_upload_bytes=1024, host="127.0.0.1", port=0)
+
+
+@pytest.fixture
+def client(settings) -> TestClient:
+    return TestClient(create_app(settings))
