@@ -17,3 +17,23 @@ def test_upload_then_poll(client, png):
 
     # Nothing new after the latest id.
     assert client.get("/slides", params={"after": 1}).json()["slides"] == []
+
+
+def test_image_download(client, png):
+    upload(client, png)
+    res = client.get("/slides/1/image")
+    assert res.status_code == 200
+    assert res.headers["content-type"] == "image/png"
+    assert res.content == png
+
+
+def test_missing_image(client):
+    assert client.get("/slides/7/image").status_code == 404
+
+
+def test_rejects_non_png(client):
+    assert upload(client, b"not an image").status_code == 415
+
+
+def test_rejects_large_upload(client, png):
+    assert upload(client, png + b"\x00" * 2048).status_code == 413
