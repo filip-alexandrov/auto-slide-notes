@@ -37,3 +37,10 @@ def test_rejects_non_png(client):
 
 def test_rejects_large_upload(client, png):
     assert upload(client, png + b"\x00" * 2048).status_code == 413
+
+
+def test_clear(client, png):
+    upload(client, png)
+    upload(client, png)
+    assert client.delete("/slides").json() == {"removed": 2}
+    assert client.get("/health").json()["slides"] == 0
