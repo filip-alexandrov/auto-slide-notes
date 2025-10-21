@@ -1,4 +1,45 @@
+# Claude Code
+CLAUDE.md
+.claude/
+
+# macOS
 .DS_Store
+
+# Editors / IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+
+# Logs
+*.log
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# Xcode / CocoaPods
+xcuserdata/
+DerivedData/
+Pods/
+*.xcuserstate
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/macos/Flutter/ephemeral/
+
+# Local device backups of notes
+ipad_backup_*/
+
+# Backend
 __pycache__/
 .pytest_cache/
 backend/.venv/
