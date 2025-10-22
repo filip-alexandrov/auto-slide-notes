@@ -5,6 +5,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'screen_capture.dart';
+import 'slide_link.dart';
+
 const _kRegion = 'region';
 const _kOnTop = 'alwaysOnTop';
 const _kHotKey = 'hotKey';
