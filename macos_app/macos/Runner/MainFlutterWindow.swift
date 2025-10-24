@@ -23,3 +23,31 @@ class MainFlutterWindow: NSWindow {
     super.awakeFromNib()
   }
 }
+
+// MARK: - Method channel
+
+/// Bridges the Flutter UI to native screen APIs.
+///
+/// All rectangles crossing the channel are in global "top-left" points:
+/// origin at the top-left corner of the primary display, y growing down.
+/// This is the coordinate space `screencapture -R` expects, and it covers
+/// secondary displays too (their coordinates may be negative).
+final class ScreenChannel {
+  private let channel: FlutterMethodChannel
+  private weak var window: NSWindow?
+  private let selector = RegionSelector()
+  private let highlight = RegionHighlight()
+  private let hotKey = GlobalHotKey()
+  private let recorder = HotKeyRecorder()
+
+  init(messenger: FlutterBinaryMessenger, window: NSWindow) {
+    self.channel = FlutterMethodChannel(name: "mac_capture/screen", binaryMessenger: messenger)
+    self.window = window
+    channel.setMethodCallHandler { [weak self] call, result in
+      self?.handle(call, result: result)
+    }
+    hotKey.onPress = { [weak self] in
+      self?.channel.invokeMethod("hotKeyPressed", arguments: nil)
+    }
+  }
+}
