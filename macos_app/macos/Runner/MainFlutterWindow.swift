@@ -50,4 +50,78 @@ final class ScreenChannel {
       self?.channel.invokeMethod("hotKeyPressed", arguments: nil)
     }
   }
+
+  private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case "selectRegion":
+      window?.orderOut(nil)
+      highlight.hide()
+      selector.begin { [weak self] rect in
+        self?.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        guard let rect = rect else { return result(nil) }
+        result(Self.encode(rect))
+      }
+
+    case "capture":
+      guard let args = call.arguments as? [String: Any], let rect = Self.decode(args) else {
+        return result(FlutterError(code: "bad_args", message: "Expected x, y, width, height", details: nil))
+      }
+      capture(rect, result: result)
+
+    case "showRegion":
+      guard let args = call.arguments as? [String: Any], let rect = Self.decode(args) else {
+        return result(FlutterError(code: "bad_args", message: "Expected x, y, width, height", details: nil))
+      }
+      highlight.show(rect)
+      result(nil)
+
+    case "hideRegion":
+      highlight.hide()
+      result(nil)
+
+    case "hasScreenRecordingPermission":
+      result(CGPreflightScreenCaptureAccess())
+
+    case "requestScreenRecordingPermission":
+      result(CGRequestScreenCaptureAccess())
+
+    case "registerHotKey":
+      guard let args = call.arguments as? [String: Any],
+            let keyCode = (args["keyCode"] as? NSNumber)?.uint32Value,
+            let modifiers = (args["modifiers"] as? NSNumber)?.uint32Value else {
+        return result(FlutterError(code: "bad_args", message: "Expected keyCode, modifiers", details: nil))
+      }
+      result(hotKey.register(keyCode: keyCode, modifiers: modifiers))
+
+    case "unregisterHotKey":
+      hotKey.unregister()
+      result(nil)
+
+    case "recordHotKey":
+      // Pressing the current shortcut must be recorded, not trigger a capture.
+      hotKey.unregister()
+      recorder.begin { result($0) }
+
+    case "cancelHotKeyRecording":
+      recorder.finish(nil)
+      result(nil)
+
+    case "playFeedback":
+      if (call.arguments as? Bool) ?? false {
+        NSSound(named: "Tink")?.play()
+      } else {
+        NSSound.beep()
+      }
+      result(nil)
+
+    case "setAlwaysOnTop":
+      let onTop = (call.arguments as? Bool) ?? false
+      window?.level = onTop ? .floating : .normal
+      result(nil)
+
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
 }
