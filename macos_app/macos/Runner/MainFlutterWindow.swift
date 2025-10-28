@@ -125,3 +125,21 @@ final class ScreenChannel {
     }
   }
 }
+
+// MARK: - Region selection overlay
+
+/// Covers every display with a dimmed, borderless window and lets the user
+/// drag out a rectangle. Esc or right-click cancels.
+final class RegionSelector {
+  private var windows: [NSWindow] = []
+  private var completion: ((CGRect?) -> Void)?
+
+  /// Drag start / current position in Cocoa global coordinates.
+  fileprivate var start: NSPoint?
+  fileprivate var current: NSPoint?
+
+  fileprivate var selection: NSRect? {
+    guard let a = start, let b = current else { return nil }
+    return NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
+  }
+}
