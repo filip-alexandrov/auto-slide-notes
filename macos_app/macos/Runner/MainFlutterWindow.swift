@@ -142,4 +142,33 @@ final class RegionSelector {
     guard let a = start, let b = current else { return nil }
     return NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
   }
+
+  func begin(completion: @escaping (CGRect?) -> Void) {
+    if !windows.isEmpty { finish(cancelled: true) }
+    self.completion = completion
+    start = nil
+    current = nil
+
+    for screen in NSScreen.screens {
+      let w = OverlayWindow(contentRect: screen.frame, styleMask: .borderless,
+                            backing: .buffered, defer: false)
+      w.setFrame(screen.frame, display: false)
+      w.level = .screenSaver
+      w.isOpaque = false
+      w.backgroundColor = .clear
+      w.hasShadow = false
+      w.isReleasedWhenClosed = false
+      w.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+      let view = OverlayView(frame: NSRect(origin: .zero, size: screen.frame.size))
+      view.selector = self
+      w.contentView = view
+      w.orderFrontRegardless()
+      windows.append(w)
+    }
+    NSApp.activate(ignoringOtherApps: true)
+    // Make the window under the mouse key so it receives Esc.
+    let mouse = NSEvent.mouseLocation
+    (windows.first { $0.frame.contains(mouse) } ?? windows.first)?.makeKey()
+    NSCursor.crosshair.push()
+  }
 }
