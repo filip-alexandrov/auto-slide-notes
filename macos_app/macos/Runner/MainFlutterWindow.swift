@@ -171,4 +171,25 @@ final class RegionSelector {
     (windows.first { $0.frame.contains(mouse) } ?? windows.first)?.makeKey()
     NSCursor.crosshair.push()
   }
+
+  fileprivate func redraw() {
+    windows.forEach { $0.contentView?.needsDisplay = true }
+  }
+
+  fileprivate func finish(cancelled: Bool) {
+    let rect = cancelled ? nil : selection
+    NSCursor.pop()
+    windows.forEach { $0.orderOut(nil) }
+    windows.removeAll()
+    start = nil
+    current = nil
+    let done = completion
+    completion = nil
+    done?(rect.map(ScreenChannel.topLeftRect(fromCocoa:)))
+  }
+}
+
+private final class OverlayWindow: NSWindow {
+  override var canBecomeKey: Bool { true }
+  override var canBecomeMain: Bool { true }
 }
