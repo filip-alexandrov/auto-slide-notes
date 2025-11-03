@@ -193,3 +193,18 @@ private final class OverlayWindow: NSWindow {
   override var canBecomeKey: Bool { true }
   override var canBecomeMain: Bool { true }
 }
+
+private final class OverlayView: NSView {
+  weak var selector: RegionSelector?
+
+  override var acceptsFirstResponder: Bool { true }
+  override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+  override func resetCursorRects() {
+    addCursorRect(bounds, cursor: .crosshair)
+  }
+
+  private func globalPoint(_ event: NSEvent) -> NSPoint {
+    window?.convertPoint(toScreen: event.locationInWindow) ?? event.locationInWindow
+  }
+}
