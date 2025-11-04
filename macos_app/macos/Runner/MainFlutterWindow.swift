@@ -207,4 +207,10 @@ private final class OverlayView: NSView {
   private func globalPoint(_ event: NSEvent) -> NSPoint {
     window?.convertPoint(toScreen: event.locationInWindow) ?? event.locationInWindow
   }
+
+  override func mouseDown(with event: NSEvent) {
+    selector?.start = globalPoint(event)
+    selector?.current = selector?.start
+    selector?.redraw()
+  }
 }
