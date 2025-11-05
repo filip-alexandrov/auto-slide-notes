@@ -213,4 +213,26 @@ private final class OverlayView: NSView {
     selector?.current = selector?.start
     selector?.redraw()
   }
+
+  override func mouseDragged(with event: NSEvent) {
+    selector?.current = globalPoint(event)
+    selector?.redraw()
+  }
+
+  override func mouseUp(with event: NSEvent) {
+    guard let selector = selector else { return }
+    selector.current = globalPoint(event)
+    if let r = selector.selection, r.width >= 4, r.height >= 4 {
+      selector.finish(cancelled: false)
+    } else {
+      // A plain click: keep waiting for a real drag.
+      selector.start = nil
+      selector.current = nil
+      selector.redraw()
+    }
+  }
+
+  override func rightMouseDown(with event: NSEvent) {
+    selector?.finish(cancelled: true)
+  }
 }
