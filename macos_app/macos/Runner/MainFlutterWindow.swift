@@ -235,4 +235,35 @@ private final class OverlayView: NSView {
   override func rightMouseDown(with event: NSEvent) {
     selector?.finish(cancelled: true)
   }
+
+  override func keyDown(with event: NSEvent) {
+    if event.keyCode == 53 { // Esc
+      selector?.finish(cancelled: true)
+    } else {
+      super.keyDown(with: event)
+    }
+  }
+
+  override func draw(_ dirtyRect: NSRect) {
+    NSColor.black.withAlphaComponent(0.35).setFill()
+    bounds.fill()
+
+    guard let window = window else { return }
+    if let global = selector?.selection {
+      let local = window.convertFromScreen(global)
+      NSColor.clear.setFill()
+      local.fill(using: .copy)
+      NSColor.white.setStroke()
+      let border = NSBezierPath(rect: local.insetBy(dx: -1, dy: -1))
+      border.lineWidth = 2
+      border.stroke()
+
+      let label = "\(Int(global.width)) × \(Int(global.height))"
+      drawLabel(label, at: NSPoint(x: local.minX, y: local.minY - 24))
+    } else {
+      let text = "Drag to select the capture area  ·  Esc to cancel"
+      let size = (text as NSString).size(withAttributes: Self.labelAttributes)
+      drawLabel(text, at: NSPoint(x: bounds.midX - size.width / 2, y: bounds.midY))
+    }
+  }
 }
