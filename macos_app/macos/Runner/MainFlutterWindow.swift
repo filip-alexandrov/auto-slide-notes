@@ -266,4 +266,18 @@ private final class OverlayView: NSView {
       drawLabel(text, at: NSPoint(x: bounds.midX - size.width / 2, y: bounds.midY))
     }
   }
+
+  private static let labelAttributes: [NSAttributedString.Key: Any] = [
+    .font: NSFont.systemFont(ofSize: 15, weight: .medium),
+    .foregroundColor: NSColor.white,
+  ]
+
+  private func drawLabel(_ text: String, at point: NSPoint) {
+    let str = text as NSString
+    let size = str.size(withAttributes: Self.labelAttributes)
+    let bg = NSRect(x: point.x - 6, y: point.y - 3, width: size.width + 12, height: size.height + 6)
+    NSColor.black.withAlphaComponent(0.7).setFill()
+    NSBezierPath(roundedRect: bg, xRadius: 5, yRadius: 5).fill()
+    str.draw(at: point, withAttributes: Self.labelAttributes)
+  }
 }
