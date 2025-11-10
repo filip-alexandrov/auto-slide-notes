@@ -124,6 +124,28 @@ final class ScreenChannel {
       result(FlutterMethodNotImplemented)
     }
   }
+
+  private func capture(_ rect: CGRect, result: @escaping FlutterResult) {
+    // Hide our own window if it overlaps the region so it doesn't end up in the shot.
+    let hide = window.map { Self.topLeftRect(fromCocoa: $0.frame).intersects(rect) } ?? false
+    if hide { window?.alphaValue = 0 }
+    let delay: TimeInterval = hide ? 0.2 : 0
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+      DispatchQueue.global(qos: .userInitiated).async {
+        let outcome = Self.runScreencapture(rect)
+        DispatchQueue.main.async {
+          if hide { self.window?.alphaValue = 1 }
+          switch outcome {
+          case .success(let data):
+            result(FlutterStandardTypedData(bytes: data))
+          case .failure(let error):
+            result(FlutterError(code: "capture_failed", message: error.localizedDescription, details: nil))
+          }
+        }
+      }
+    }
+  }
 }
 
 // MARK: - Region selection overlay
