@@ -146,6 +146,35 @@ final class ScreenChannel {
       }
     }
   }
+
+  private static func runScreencapture(_ rect: CGRect) -> Result<Data, Error> {
+    let path = NSTemporaryDirectory() + "mac_capture_\(UUID().uuidString).png"
+    defer { try? FileManager.default.removeItem(atPath: path) }
+
+    let r = rect.integral
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+    // -x: no sound, -R: rectangle in global points, -t: format
+    process.arguments = [
+      "-x", "-t", "png",
+      "-R", "\(Int(r.minX)),\(Int(r.minY)),\(Int(r.width)),\(Int(r.height))",
+      path,
+    ]
+    let stderr = Pipe()
+    process.standardError = stderr
+    do {
+      try process.run()
+      process.waitUntilExit()
+      guard process.terminationStatus == 0 else {
+        let msg = String(data: stderr.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        throw NSError(domain: "screencapture", code: Int(process.terminationStatus),
+                      userInfo: [NSLocalizedDescriptionKey: "screencapture failed: \(msg)"])
+      }
+      return .success(try Data(contentsOf: URL(fileURLWithPath: path)))
+    } catch {
+      return .failure(error)
+    }
+  }
 }
 
 // MARK: - Region selection overlay
