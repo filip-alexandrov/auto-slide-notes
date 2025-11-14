@@ -175,6 +175,20 @@ final class ScreenChannel {
       return .failure(error)
     }
   }
+
+  // MARK: Coordinates
+
+  /// Cocoa global coordinates have their origin at the bottom-left of the
+  /// primary display; convert to top-left origin.
+  static func topLeftRect(fromCocoa r: NSRect) -> CGRect {
+    let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+    return CGRect(x: r.minX, y: primaryHeight - r.maxY, width: r.width, height: r.height)
+  }
+
+  /// Inverse of `topLeftRect(fromCocoa:)` (the flip is its own inverse).
+  static func cocoaRect(fromTopLeft r: CGRect) -> NSRect {
+    topLeftRect(fromCocoa: r)
+  }
 }
 
 // MARK: - Region selection overlay
