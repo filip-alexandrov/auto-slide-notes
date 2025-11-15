@@ -189,6 +189,19 @@ final class ScreenChannel {
   static func cocoaRect(fromTopLeft r: CGRect) -> NSRect {
     topLeftRect(fromCocoa: r)
   }
+
+  private static func encode(_ r: CGRect) -> [String: Double] {
+    ["x": Double(r.minX), "y": Double(r.minY), "width": Double(r.width), "height": Double(r.height)]
+  }
+
+  private static func decode(_ a: [String: Any]) -> CGRect? {
+    guard let x = (a["x"] as? NSNumber)?.doubleValue,
+          let y = (a["y"] as? NSNumber)?.doubleValue,
+          let w = (a["width"] as? NSNumber)?.doubleValue,
+          let h = (a["height"] as? NSNumber)?.doubleValue,
+          w > 0, h > 0 else { return nil }
+    return CGRect(x: x, y: y, width: w, height: h)
+  }
 }
 
 // MARK: - Region selection overlay
