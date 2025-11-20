@@ -40,3 +40,24 @@ class CaptureScreen extends StatefulWidget {
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
 }
+
+class _CaptureScreenState extends State<CaptureScreen> {
+  SharedPreferences? _prefs;
+  late final SlideLink _link = SlideLink(approvePeer: _approvePeer)
+    ..addListener(() {
+      if (mounted) setState(() {});
+    });
+  Rect? _region;
+  bool _alwaysOnTop = false;
+  HotKeySpec _hotKey = HotKeySpec.defaultSpec;
+  bool _hotKeyEnabled = true;
+
+  /// False when macOS refused the shortcut (another app owns it).
+  bool _hotKeyRegistered = true;
+  bool _showingRegion = false;
+  bool _busy = false;
+  bool? _hasPermission;
+  Uint8List? _lastImage;
+  String? _status;
+  bool _statusIsError = false;
+}
