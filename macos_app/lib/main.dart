@@ -99,4 +99,33 @@ class _CaptureScreenState extends State<CaptureScreen> {
       _hasPermission = hasPermission;
     });
   }
+
+  void _setStatus(String msg, {bool error = false}) {
+    if (!mounted) return;
+    setState(() {
+      _status = msg;
+      _statusIsError = error;
+    });
+  }
+
+  Future<void> _selectRegion() async {
+    final region = await ScreenCapture.selectRegion();
+    // The selection overlay hides the outline; bring it back (for the new
+    // region, or the old one if the user cancelled).
+    if (_showingRegion && (region ?? _region) != null) {
+      await ScreenCapture.showRegion((region ?? _region)!);
+    }
+    if (region == null) return;
+    await _prefs?.setString(
+      _kRegion,
+      jsonEncode({
+        'x': region.left,
+        'y': region.top,
+        'width': region.width,
+        'height': region.height,
+      }),
+    );
+    setState(() => _region = region);
+    _setStatus('Region saved.');
+  }
 }
