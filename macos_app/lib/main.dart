@@ -128,4 +128,43 @@ class _CaptureScreenState extends State<CaptureScreen> {
     setState(() => _region = region);
     _setStatus('Region saved.');
   }
+
+  Future<void> _screenshot({bool fromShortcut = false}) async {
+    final region = _region;
+    if (_busy) return;
+    if (region == null) {
+      _setStatus('Select a capture region first.', error: true);
+      if (fromShortcut) await ScreenCapture.playFeedback(success: false);
+      return;
+    }
+    setState(() => _busy = true);
+    var ok = false;
+    try {
+      if (!await ScreenCapture.hasPermission()) {
+        await ScreenCapture.requestPermission();
+        setState(() => _hasPermission = false);
+        _setStatus(
+          'Screen Recording permission is required. Enable it in System Settings '
+          '› Privacy & Security › Screen Recording, then restart the app.',
+          error: true,
+        );
+        return;
+      }
+      final png = await ScreenCapture.capture(region);
+      setState(() => _lastImage = png);
+      final id = await _link.send(png);
+      ok = true;
+      _setStatus(
+        _link.peers.isEmpty
+            ? 'Slide #$id queued — it will be sent when an iPad connects.'
+            : 'Slide #$id sent to ${_link.peers.join(', ')}.',
+      );
+    } catch (e) {
+      _setStatus('Failed: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+      // The window may be hidden behind the slides; confirm by sound.
+      if (fromShortcut) await ScreenCapture.playFeedback(success: ok);
+    }
+  }
 }
