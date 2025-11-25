@@ -167,4 +167,184 @@ class _CaptureScreenState extends State<CaptureScreen> {
       if (fromShortcut) await ScreenCapture.playFeedback(success: ok);
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (_prefs == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final region = _region;
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _LinkCard(link: _link),
+            const SizedBox(height: 16),
+            Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.crop_free),
+                title: Text(
+                  region == null ? 'No region selected' : 'Capture region',
+                ),
+                subtitle: region == null
+                    ? const Text('Choose the part of the screen to capture.')
+                    : Text(
+                        'x ${region.left.round()}, y ${region.top.round()} · '
+                        '${region.width.round()} × ${region.height.round()} pt',
+                      ),
+                trailing: TextButton.icon(
+                  icon: const Icon(Icons.settings_overscan),
+                  label: Text(region == null ? 'Select…' : 'Change…'),
+                  onPressed: _busy ? null : _selectRegion,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: Icon(
+                _showingRegion ? Icons.visibility_off : Icons.visibility,
+              ),
+              label: Text(
+                _showingRegion ? 'Hide capture area' : 'Show capture area',
+              ),
+              onPressed: region == null ? null : _toggleRegionOutline,
+            ),
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('Keep this window on top'),
+              value: _alwaysOnTop,
+              onChanged: (v) async {
+                final value = v ?? false;
+                await ScreenCapture.setAlwaysOnTop(value);
+                await _prefs?.setBool(_kOnTop, value);
+                setState(() => _alwaysOnTop = value);
+              },
+            ),
+            Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.keyboard_outlined),
+                title: const Text('Screenshot shortcut'),
+                subtitle: Text(
+                  !_hotKeyEnabled
+                      ? 'Off'
+                      : _hotKeyRegistered
+                      ? 'Works in any app.'
+                      : 'Already used by another app — choose another.',
+                  style: _hotKeyEnabled && !_hotKeyRegistered
+                      ? TextStyle(color: theme.colorScheme.error)
+                      : null,
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _KeyCap(_hotKey.label, enabled: _hotKeyEnabled),
+                    const SizedBox(width: 4),
+                    TextButton(
+                      onPressed: _changeHotKey,
+                      child: const Text('Change…'),
+                    ),
+                    PopupMenuButton<String>(
+                      tooltip: 'More',
+                      onSelected: (v) async {
+                        switch (v) {
+                          case 'toggle':
+                            final value = !_hotKeyEnabled;
+                            await _prefs?.setBool(_kHotKeyEnabled, value);
+                            setState(() => _hotKeyEnabled = value);
+                            await _applyHotKey();
+                          case 'reset':
+                            await _resetHotKey();
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        CheckedPopupMenuItem(
+                          value: 'toggle',
+                          checked: _hotKeyEnabled,
+                          child: const Text('Enabled'),
+                        ),
+                        PopupMenuItem(
+                          value: 'reset',
+                          enabled: !_hotKey.isDefault,
+                          child: Text(
+                            'Reset to ${HotKeySpec.defaultSpec.label}',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_hasPermission == false)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Screen Recording permission not granted yet — you will be '
+                  'asked on the first screenshot.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 56,
+              child: FilledButton.icon(
+                icon: _busy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.photo_camera),
+                label: Text(
+                  _hotKeyEnabled
+                      ? 'Screenshot  (${_hotKey.label})'
+                      : 'Screenshot',
+                  style: const TextStyle(fontSize: 18),
+                ),
+                onPressed: region == null || _busy ? null : _screenshot,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (_status != null)
+              Text(
+                _status!,
+                style: TextStyle(
+                  color: _statusIsError
+                      ? theme.colorScheme.error
+                      : Colors.green[700],
+                ),
+              ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(8),
+                child: _lastImage == null
+                    ? Text(
+                        'Last screenshot appears here',
+                        style: theme.textTheme.bodySmall,
+                      )
+                    : Image.memory(_lastImage!, fit: BoxFit.contain),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
