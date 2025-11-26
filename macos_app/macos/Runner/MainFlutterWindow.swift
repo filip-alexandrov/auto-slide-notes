@@ -204,6 +204,26 @@ final class ScreenChannel {
   }
 }
 
+// MARK: - Region highlight
+
+/// Draws a frame around the capture region. The frame sits just *outside*
+/// the region so it never appears in screenshots, and the window ignores
+/// the mouse so it doesn't get in the way.
+final class RegionHighlight {
+  private static let thickness: CGFloat = 4
+  private var window: NSWindow?
+
+  func show(_ topLeftRect: CGRect) {
+    let region = ScreenChannel.cocoaRect(fromTopLeft: topLeftRect)
+    let frame = region.insetBy(dx: -Self.thickness, dy: -Self.thickness)
+    let w = window ?? makeWindow()
+    w.setFrame(frame, display: true)
+    w.contentView?.needsDisplay = true
+    w.orderFrontRegardless()
+    window = w
+  }
+}
+
 // MARK: - Region selection overlay
 
 /// Covers every display with a dimmed, borderless window and lets the user

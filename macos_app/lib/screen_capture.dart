@@ -26,4 +26,16 @@ class ScreenCapture {
     });
     return bytes!;
   }
+
+  /// Outlines [region] on screen (the outline is drawn just outside it, so
+  /// it never shows up in captures).
+  static Future<void> showRegion(Rect region) =>
+      _channel.invokeMethod('showRegion', {
+        'x': region.left,
+        'y': region.top,
+        'width': region.width,
+        'height': region.height,
+      });
+
+  static Future<void> hideRegion() => _channel.invokeMethod('hideRegion');
 }
