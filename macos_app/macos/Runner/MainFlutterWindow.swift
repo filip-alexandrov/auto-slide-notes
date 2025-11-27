@@ -222,6 +222,24 @@ final class RegionHighlight {
     w.orderFrontRegardless()
     window = w
   }
+
+  func hide() {
+    window?.orderOut(nil)
+  }
+
+  private func makeWindow() -> NSWindow {
+    let w = NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: false)
+    w.level = .statusBar
+    w.isOpaque = false
+    w.backgroundColor = .clear
+    w.hasShadow = false
+    w.ignoresMouseEvents = true
+    w.isReleasedWhenClosed = false
+    w.sharingType = .none
+    w.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+    w.contentView = FrameView(thickness: Self.thickness)
+    return w
+  }
 }
 
 // MARK: - Region selection overlay
