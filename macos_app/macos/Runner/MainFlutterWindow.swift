@@ -240,6 +240,27 @@ final class RegionHighlight {
     w.contentView = FrameView(thickness: Self.thickness)
     return w
   }
+
+  private final class FrameView: NSView {
+    let thickness: CGFloat
+
+    init(thickness: CGFloat) {
+      self.thickness = thickness
+      super.init(frame: .zero)
+      autoresizingMask = [.width, .height]
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    override func draw(_ dirtyRect: NSRect) {
+      NSColor.clear.setFill()
+      bounds.fill()
+      let ring = NSBezierPath(rect: bounds)
+      ring.append(NSBezierPath(rect: bounds.insetBy(dx: thickness, dy: thickness)).reversed)
+      NSColor.systemRed.withAlphaComponent(0.85).setFill()
+      ring.fill()
+    }
+  }
 }
 
 // MARK: - Region selection overlay
