@@ -129,6 +129,17 @@ class _CaptureScreenState extends State<CaptureScreen> {
     _setStatus('Region saved.');
   }
 
+  Future<void> _toggleRegionOutline() async {
+    final region = _region;
+    if (region == null) return;
+    if (_showingRegion) {
+      await ScreenCapture.hideRegion();
+    } else {
+      await ScreenCapture.showRegion(region);
+    }
+    setState(() => _showingRegion = !_showingRegion);
+  }
+
   Future<void> _screenshot({bool fromShortcut = false}) async {
     final region = _region;
     if (_busy) return;
