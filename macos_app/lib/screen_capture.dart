@@ -38,4 +38,13 @@ class ScreenCapture {
       });
 
   static Future<void> hideRegion() => _channel.invokeMethod('hideRegion');
+
+  static Future<bool> hasPermission() async =>
+      await _channel.invokeMethod<bool>('hasScreenRecordingPermission') ??
+      false;
+
+  /// Triggers the system prompt (only shown once per app by macOS).
+  static Future<bool> requestPermission() async =>
+      await _channel.invokeMethod<bool>('requestScreenRecordingPermission') ??
+      false;
 }
