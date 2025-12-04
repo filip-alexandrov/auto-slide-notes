@@ -47,4 +47,7 @@ class ScreenCapture {
   static Future<bool> requestPermission() async =>
       await _channel.invokeMethod<bool>('requestScreenRecordingPermission') ??
       false;
+
+  static Future<void> setAlwaysOnTop(bool value) =>
+      _channel.invokeMethod('setAlwaysOnTop', value);
 }
