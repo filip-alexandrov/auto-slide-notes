@@ -100,6 +100,12 @@ class _CaptureScreenState extends State<CaptureScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _link.dispose();
+    super.dispose();
+  }
+
   void _setStatus(String msg, {bool error = false}) {
     if (!mounted) return;
     setState(() {
