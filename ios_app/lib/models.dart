@@ -21,4 +21,48 @@ class Stroke {
     required this.width,
     List<Offset>? points,
   }) : points = points ?? [];
+
+  final StrokeTool tool;
+  final int color;
+  final double width;
+  final List<Offset> points;
+
+  Rect get bounds {
+    if (points.isEmpty) return Rect.zero;
+    var minX = points.first.dx, maxX = minX;
+    var minY = points.first.dy, maxY = minY;
+    for (final p in points) {
+      if (p.dx < minX) minX = p.dx;
+      if (p.dx > maxX) maxX = p.dx;
+      if (p.dy < minY) minY = p.dy;
+      if (p.dy > maxY) maxY = p.dy;
+    }
+    return Rect.fromLTRB(minX, minY, maxX, maxY).inflate(width / 2);
+  }
+
+  Map<String, dynamic> toJson() => {
+    'tool': tool.name,
+    'color': color,
+    'width': width,
+    // Flattened [x0, y0, x1, y1, ...] rounded to 0.1 units to keep files small.
+    'points': [
+      for (final p in points) ...[
+        (p.dx * 10).round() / 10,
+        (p.dy * 10).round() / 10,
+      ],
+    ],
+  };
+
+  factory Stroke.fromJson(Map<String, dynamic> json) {
+    final flat = (json['points'] as List).cast<num>();
+    return Stroke(
+      tool: StrokeTool.values.byName(json['tool'] as String),
+      color: json['color'] as int,
+      width: (json['width'] as num).toDouble(),
+      points: [
+        for (var i = 0; i + 1 < flat.length; i += 2)
+          Offset(flat[i].toDouble(), flat[i + 1].toDouble()),
+      ],
+    );
+  }
 }
