@@ -66,3 +66,44 @@ class Stroke {
     );
   }
 }
+
+enum PageSide { left, top, right, bottom }
+
+/// A single page of the notebook: either blank or backed by a slide image.
+///
+/// A page starts [pageWidth] units wide with the slide image filling it.
+/// [extend] adds white space on one side; strokes and the image keep their
+/// position relative to each other.
+class NotePage extends ChangeNotifier {
+  NotePage({
+    required this.id,
+    required double aspect,
+    this.imageFile,
+    this.slideId,
+    List<Stroke>? strokes,
+  }) : width = pageWidth,
+       height = pageWidth * aspect,
+       imageRect = imageFile == null
+           ? null
+           : Rect.fromLTWH(0, 0, pageWidth, pageWidth * aspect),
+       strokes = strokes ?? [];
+
+  NotePage._({
+    required this.id,
+    required this.width,
+    required this.height,
+    required this.imageRect,
+    required this.imageFile,
+    required this.slideId,
+    required this.strokes,
+  });
+
+  final String id;
+
+  /// Page size in page units.
+  double width;
+  double height;
+
+  /// Where the slide image sits on the page, in page units.
+  Rect? imageRect;
+}
