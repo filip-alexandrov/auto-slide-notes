@@ -106,4 +106,15 @@ class NotePage extends ChangeNotifier {
 
   /// Where the slide image sits on the page, in page units.
   Rect? imageRect;
+
+  /// File name (relative to the notebook's image directory) of the slide image.
+  final String? imageFile;
+
+  /// Server-side slide id, if this page came from the Mac.
+  final int? slideId;
+
+  final List<Stroke> strokes;
+
+  /// height / width
+  double get aspect => height / width;
 }
