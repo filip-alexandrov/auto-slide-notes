@@ -117,4 +117,20 @@ class NotePage extends ChangeNotifier {
 
   /// height / width
   double get aspect => height / width;
+
+  void addStroke(Stroke s) {
+    strokes.add(s);
+    notifyListeners();
+  }
+
+  void removeStrokes(Iterable<Stroke> toRemove) {
+    final set = toRemove.toSet();
+    strokes.removeWhere(set.contains);
+    notifyListeners();
+  }
+
+  void insertStrokes(Iterable<Stroke> toAdd) {
+    strokes.addAll(toAdd);
+    notifyListeners();
+  }
 }
