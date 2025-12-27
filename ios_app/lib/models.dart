@@ -133,4 +133,51 @@ class NotePage extends ChangeNotifier {
     strokes.addAll(toAdd);
     notifyListeners();
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'width': width,
+    'height': height,
+    if (imageRect != null)
+      'imageRect': [
+        imageRect!.left,
+        imageRect!.top,
+        imageRect!.width,
+        imageRect!.height,
+      ],
+    if (imageFile != null) 'imageFile': imageFile,
+    if (slideId != null) 'slideId': slideId,
+    'strokes': [for (final s in strokes) s.toJson()],
+  };
+
+  factory NotePage.fromJson(Map<String, dynamic> json) {
+    // Documents saved before pages could be extended only stored 'aspect'.
+    final width = (json['width'] as num?)?.toDouble() ?? pageWidth;
+    final height =
+        (json['height'] as num?)?.toDouble() ??
+        pageWidth * (json['aspect'] as num).toDouble();
+    final imageFile = json['imageFile'] as String?;
+    final r = (json['imageRect'] as List?)?.cast<num>();
+    return NotePage._(
+      id: json['id'] as String,
+      width: width,
+      height: height,
+      imageRect: r != null
+          ? Rect.fromLTWH(
+              r[0].toDouble(),
+              r[1].toDouble(),
+              r[2].toDouble(),
+              r[3].toDouble(),
+            )
+          : imageFile != null
+          ? Rect.fromLTWH(0, 0, width, height)
+          : null,
+      imageFile: imageFile,
+      slideId: json['slideId'] as int?,
+      strokes: [
+        for (final s in (json['strokes'] as List))
+          Stroke.fromJson(s as Map<String, dynamic>),
+      ],
+    );
+  }
 }
