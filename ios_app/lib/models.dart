@@ -181,3 +181,22 @@ class NotePage extends ChangeNotifier {
     );
   }
 }
+
+class NoteDocument extends ChangeNotifier {
+  NoteDocument({
+    required this.title,
+    List<NotePage>? pages,
+    List<TrashedPage>? trash,
+    DateTime? created,
+  }) : pages = pages ?? [],
+       trash = trash ?? [],
+       created = created ?? DateTime.now();
+
+  String title;
+  final List<NotePage> pages;
+
+  void appendPage(NotePage page) {
+    pages.add(page);
+    notifyListeners();
+  }
+}
