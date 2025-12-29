@@ -199,4 +199,14 @@ class NoteDocument extends ChangeNotifier {
     pages.add(page);
     notifyListeners();
   }
+
+  void removePage(NotePage page) {
+    pages.remove(page);
+    notifyListeners();
+  }
+
+  void insertPage(int index, NotePage page) {
+    pages.insert(index.clamp(0, pages.length), page);
+    notifyListeners();
+  }
 }
