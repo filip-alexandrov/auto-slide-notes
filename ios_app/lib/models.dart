@@ -209,4 +209,28 @@ class NoteDocument extends ChangeNotifier {
     pages.insert(index.clamp(0, pages.length), page);
     notifyListeners();
   }
+
+  /// Signals that page contents changed (used to trigger autosave).
+  void markDirty() => notifyListeners();
+
+  Map<String, dynamic> toJson() => {
+    'version': 1,
+    'title': title,
+    'created': created.toIso8601String(),
+    'pages': [for (final p in pages) p.toJson()],
+    'trash': [for (final t in trash) t.toJson()],
+  };
+
+  factory NoteDocument.fromJson(Map<String, dynamic> json) => NoteDocument(
+    title: json['title'] as String? ?? 'Notes',
+    created: DateTime.tryParse(json['created'] as String? ?? ''),
+    pages: [
+      for (final p in (json['pages'] as List))
+        NotePage.fromJson(p as Map<String, dynamic>),
+    ],
+    trash: [
+      for (final t in (json['trash'] as List? ?? const []))
+        TrashedPage.fromJson(t as Map<String, dynamic>),
+    ],
+  );
 }
