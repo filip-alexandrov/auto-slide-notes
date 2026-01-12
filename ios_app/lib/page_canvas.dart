@@ -36,4 +36,32 @@ class ToolSettings {
   bool get isHighlighter => tool == DrawTool.highlighter;
   int get color => isHighlighter ? highlighterColor : penColor;
   double get strokeWidth => isHighlighter ? highlighterWidth : penWidth;
+
+  /// Eraser reach around the Pencil tip, in page units (a stroke is hit
+  /// when it passes within this distance plus half its own width).
+  double get eraserRadius => 4;
+
+  bool canDraw(PointerDeviceKind kind) =>
+      kind == PointerDeviceKind.stylus ||
+      kind == PointerDeviceKind.invertedStylus ||
+      (fingerDraws && kind == PointerDeviceKind.touch) ||
+      kind == PointerDeviceKind.mouse; // Simulator / Mac debugging.
+
+  ToolSettings copyWith({
+    DrawTool? tool,
+    int? penColor,
+    int? highlighterColor,
+    double? penWidth,
+    double? highlighterWidth,
+    bool? fingerDraws,
+    Smoothing? smoothing,
+  }) => ToolSettings(
+    tool: tool ?? this.tool,
+    penColor: penColor ?? this.penColor,
+    highlighterColor: highlighterColor ?? this.highlighterColor,
+    penWidth: penWidth ?? this.penWidth,
+    highlighterWidth: highlighterWidth ?? this.highlighterWidth,
+    fingerDraws: fingerDraws ?? this.fingerDraws,
+    smoothing: smoothing ?? this.smoothing,
+  );
 }
