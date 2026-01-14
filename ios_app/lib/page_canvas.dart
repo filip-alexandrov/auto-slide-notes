@@ -65,3 +65,25 @@ class ToolSettings {
     smoothing: smoothing ?? this.smoothing,
   );
 }
+
+/// Renders one page (background image + ink) and turns stylus input into
+/// strokes. Fingers are left to the enclosing scroll view.
+class PageCanvas extends StatefulWidget {
+  const PageCanvas({
+    super.key,
+    required this.page,
+    required this.imageFile,
+    required this.settings,
+    required this.onStrokeAdded,
+    required this.onStrokesErased,
+  });
+
+  final NotePage page;
+  final File? imageFile;
+  final ToolSettings settings;
+  final void Function(NotePage page, Stroke stroke) onStrokeAdded;
+  final void Function(NotePage page, List<Stroke> strokes) onStrokesErased;
+
+  @override
+  State<PageCanvas> createState() => _PageCanvasState();
+}
