@@ -101,4 +101,11 @@ class _PageCanvasState extends State<PageCanvas> {
     _active.dispose();
     super.dispose();
   }
+
+  Offset _toPage(Offset local) => local / _scale;
+
+  static int _bucket(double px) => ((px / 512).ceil() * 512).clamp(512, 8192);
+
+  /// How much larger this page is than a fresh one (1 unless extended).
+  double get _unitScale => widget.page.width / pageWidth;
 }
