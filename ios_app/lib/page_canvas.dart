@@ -87,3 +87,18 @@ class PageCanvas extends StatefulWidget {
   @override
   State<PageCanvas> createState() => _PageCanvasState();
 }
+
+class _PageCanvasState extends State<PageCanvas> {
+  final _active = _ActiveStroke();
+  int? _pointer;
+  PointerDeviceKind? _pointerKind;
+  bool _erasing = false;
+  final List<Stroke> _erased = [];
+  double _scale = 1;
+
+  @override
+  void dispose() {
+    _active.dispose();
+    super.dispose();
+  }
+}
