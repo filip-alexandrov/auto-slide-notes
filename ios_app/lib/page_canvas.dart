@@ -108,4 +108,38 @@ class _PageCanvasState extends State<PageCanvas> {
 
   /// How much larger this page is than a fresh one (1 unless extended).
   double get _unitScale => widget.page.width / pageWidth;
+
+  void _onDown(PointerDownEvent e) {
+    // A second finger while drawing with a finger means a pinch, not ink.
+    if (_pointer != null &&
+        _pointerKind == PointerDeviceKind.touch &&
+        e.kind == PointerDeviceKind.touch) {
+      _finish(commit: false);
+      return;
+    }
+    if (_pointer != null || !widget.settings.canDraw(e.kind)) return;
+    _pointer = e.pointer;
+    _pointerKind = e.kind;
+    final p = _toPage(e.localPosition);
+    // The back end of the Apple Pencil (where supported) always erases.
+    _erasing =
+        widget.settings.tool == DrawTool.eraser ||
+        e.kind == PointerDeviceKind.invertedStylus;
+    if (_erasing) {
+      _eraseAt(p);
+    } else {
+      final s = widget.settings;
+      _active.start(
+        Stroke(
+          tool: s.tool == DrawTool.highlighter
+              ? StrokeTool.highlighter
+              : StrokeTool.pen,
+          color: s.color,
+          width: s.strokeWidth * _unitScale,
+          points: [p],
+        ),
+        s.smoothing,
+      );
+    }
+  }
 }
