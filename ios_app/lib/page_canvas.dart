@@ -142,4 +142,26 @@ class _PageCanvasState extends State<PageCanvas> {
       );
     }
   }
+
+  void _onMove(PointerMoveEvent e) {
+    if (e.pointer != _pointer) return;
+    final p = _toPage(e.localPosition);
+    if (_erasing) {
+      _eraseAt(p);
+    } else {
+      _active.add(p);
+    }
+  }
+
+  void _onUp(PointerUpEvent e) {
+    if (e.pointer != _pointer) return;
+    // End exactly where the pen lifted, not at the lagging smoothed point.
+    if (!_erasing) _active.end(_toPage(e.localPosition));
+    _finish(commit: true);
+  }
+
+  void _onCancel(PointerCancelEvent e) {
+    if (e.pointer != _pointer) return;
+    _finish(commit: false);
+  }
 }
