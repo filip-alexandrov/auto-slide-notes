@@ -164,4 +164,21 @@ class _PageCanvasState extends State<PageCanvas> {
     if (e.pointer != _pointer) return;
     _finish(commit: false);
   }
+
+  void _finish({required bool commit}) {
+    _pointer = null;
+    if (_erasing) {
+      if (_erased.isNotEmpty) {
+        widget.onStrokesErased(widget.page, List.of(_erased));
+        _erased.clear();
+      }
+      _erasing = false;
+      return;
+    }
+    final stroke = _active.take();
+    if (commit && stroke != null) {
+      widget.page.addStroke(stroke);
+      widget.onStrokeAdded(widget.page, stroke);
+    }
+  }
 }
