@@ -182,3 +182,60 @@ class _PageCanvasState extends State<PageCanvas> {
     }
   }
 }
+
+class _StrokesPainter extends CustomPainter {
+  _StrokesPainter(this.page, this.scale) : super(repaint: page);
+
+  final NotePage page;
+  final double scale;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(scale);
+    // Highlighter first so pen ink stays crisp on top of it.
+    for (final s in page.strokes) {
+      if (s.tool == StrokeTool.highlighter) paintStroke(canvas, s);
+    }
+    for (final s in page.strokes) {
+      if (s.tool == StrokeTool.pen) paintStroke(canvas, s);
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_StrokesPainter old) =>
+      old.page != page || old.scale != scale;
+}
+
+void paintStroke(Canvas canvas, Stroke s) {
+  final color = Color(s.color);
+  final paint = Paint()
+    ..color = s.tool == StrokeTool.highlighter
+        ? color.withValues(alpha: highlighterOpacity)
+        : color
+    ..strokeWidth = s.width
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round
+    ..style = PaintingStyle.stroke
+    ..isAntiAlias = true;
+
+  final pts = s.points;
+  if (pts.isEmpty) return;
+  if (pts.length == 1) {
+    canvas.drawCircle(
+      pts.first,
+      s.width / 2,
+      paint..style = PaintingStyle.fill,
+    );
+    return;
+  }
+  final path = Path();
+  traceSmooth(
+    pts,
+    moveTo: (p) => path.moveTo(p.dx, p.dy),
+    cubicTo: (c1, c2, p) =>
+        path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, p.dx, p.dy),
+  );
+  canvas.drawPath(path, paint);
+}
