@@ -183,6 +183,30 @@ class _PageCanvasState extends State<PageCanvas> {
   }
 }
 
+class _ActiveStroke extends ChangeNotifier {
+  Stroke? stroke;
+
+  final _stabilizer = InkStabilizer();
+
+  Smoothing _level = Smoothing.medium;
+
+  void start(Stroke s, Smoothing level) {
+    stroke = s;
+    _level = level;
+    _stabilizer.reset(s.points.first, level);
+    notifyListeners();
+  }
+
+  void add(Offset raw) {
+    final s = stroke;
+    if (s == null) return;
+    final p = _stabilizer.add(raw);
+    if (p == null) return;
+    s.points.add(p);
+    notifyListeners();
+  }
+}
+
 class _StrokesPainter extends CustomPainter {
   _StrokesPainter(this.page, this.scale) : super(repaint: page);
 
