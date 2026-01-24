@@ -205,6 +205,26 @@ class _ActiveStroke extends ChangeNotifier {
     s.points.add(p);
     notifyListeners();
   }
+
+  void end(Offset raw) {
+    final s = stroke;
+    if (s == null || (s.points.last - raw).distance < 0.5) return;
+    s.points.add(raw);
+  }
+
+  /// Ends the stroke and returns it with the finishing smoothing applied.
+  Stroke? take() {
+    final s = stroke;
+    if (s != null && _level.finishPasses > 0) {
+      final smoothed = relax(s.points, _level.finishPasses);
+      s.points
+        ..clear()
+        ..addAll(smoothed);
+    }
+    stroke = null;
+    notifyListeners();
+    return s;
+  }
 }
 
 class _StrokesPainter extends CustomPainter {
