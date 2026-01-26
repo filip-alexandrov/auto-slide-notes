@@ -252,6 +252,27 @@ class _StrokesPainter extends CustomPainter {
       old.page != page || old.scale != scale;
 }
 
+class _ActivePainter extends CustomPainter {
+  _ActivePainter(this.active, this.scale) : super(repaint: active);
+
+  final _ActiveStroke active;
+  final double scale;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = active.stroke;
+    if (s == null) return;
+    canvas.save();
+    canvas.scale(scale);
+    paintStroke(canvas, s);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_ActivePainter old) =>
+      old.active != active || old.scale != scale;
+}
+
 void paintStroke(Canvas canvas, Stroke s) {
   final color = Color(s.color);
   final paint = Paint()
