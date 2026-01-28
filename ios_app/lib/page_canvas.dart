@@ -181,6 +181,60 @@ class _PageCanvasState extends State<PageCanvas> {
       widget.onStrokeAdded(widget.page, stroke);
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final page = widget.page;
+        _scale = width / page.width;
+        final imageRect = page.imageRect;
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        return Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: _onDown,
+          onPointerMove: _onMove,
+          onPointerUp: _onUp,
+          onPointerCancel: _onCancel,
+          // Clip ink that ends up outside the page after space is removed.
+          child: ClipRect(
+            child: SizedBox(
+              width: width,
+              height: width * page.aspect,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  const ColoredBox(color: Colors.white),
+                  if (widget.imageFile != null && imageRect != null)
+                    Positioned.fromRect(
+                      rect: Rect.fromLTWH(
+                        imageRect.left * _scale,
+                        imageRect.top * _scale,
+                        imageRect.width * _scale,
+                        imageRect.height * _scale,
+                      ),
+                      child: Image.file(
+                        widget.imageFile!,
+                        fit: BoxFit.fill,
+                        // Bucketed so pinch-zooming doesn't re-decode
+                        // the image on every frame.
+                        cacheWidth: _bucket(imageRect.width * _scale * dpr),
+                        gaplessPlayback: true,
+                      ),
+                    ),
+                  RepaintBoundary(
+                    child: CustomPaint(painter: _StrokesPainter(page, _scale)),
+                  ),
+                  CustomPaint(painter: _ActivePainter(_active, _scale)),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ActiveStroke extends ChangeNotifier {
