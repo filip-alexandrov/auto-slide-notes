@@ -182,6 +182,37 @@ class _PageCanvasState extends State<PageCanvas> {
     }
   }
 
+  void _eraseAt(Offset p) {
+    final r = widget.settings.eraserRadius * _unitScale;
+    final hits = [
+      for (final s in widget.page.strokes)
+        if (_hits(s, p, r)) s,
+    ];
+    if (hits.isEmpty) return;
+    widget.page.removeStrokes(hits);
+    _erased.addAll(hits);
+  }
+
+  static bool _hits(Stroke s, Offset p, double r) {
+    if (!s.bounds.inflate(r).contains(p)) return false;
+    final tol = r + s.width / 2;
+    final pts = s.points;
+    if (pts.length == 1) return (pts.first - p).distance <= tol;
+    for (var i = 1; i < pts.length; i++) {
+      if (_segmentDistance(p, pts[i - 1], pts[i]) <= tol) return true;
+    }
+    return false;
+  }
+
+  static double _segmentDistance(Offset p, Offset a, Offset b) {
+    final ab = b - a;
+    final len2 = ab.dx * ab.dx + ab.dy * ab.dy;
+    if (len2 == 0) return (p - a).distance;
+    var t = ((p.dx - a.dx) * ab.dx + (p.dy - a.dy) * ab.dy) / len2;
+    t = t.clamp(0.0, 1.0);
+    return (p - (a + ab * t)).distance;
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
