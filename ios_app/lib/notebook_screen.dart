@@ -55,4 +55,43 @@ class _NotebookScreenState extends State<NotebookScreen>
   AutoSaver? _saver;
   SlideLink? _link;
   SharedPreferences? _prefs;
+
+  final _scroll = ScrollController();
+  ToolSettings _settings = const ToolSettings();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scroll.addListener(_updateCurrentPage);
+    _pencilChannel.setMethodCallHandler((call) async {
+      if (call.method == 'doubleTap') _togglePenEraser();
+    });
+    _init();
+  }
+
+  Future<void> _init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = widget.library.storeFor(widget.noteId);
+    final doc = await store.load();
+    widget.library.lastOpenedId = widget.noteId;
+    final link = SlideLink(store: store, doc: doc, onSlideAdded: _onSlideAdded)
+      ..addListener(() {
+        if (mounted) setState(() {});
+      });
+    if (!mounted) return;
+    final smoothing = Smoothing.values
+        .asNameMap()[prefs.getString(_smoothingKey)];
+    setState(() {
+      _prefs = prefs;
+      if (smoothing != null) {
+        _settings = _settings.copyWith(smoothing: smoothing);
+      }
+      _store = store;
+      _doc = doc;
+      _saver = AutoSaver(store, doc);
+      _link = link;
+    });
+    link.start();
+  }
 }
