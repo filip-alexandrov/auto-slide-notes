@@ -94,4 +94,13 @@ class _NotebookScreenState extends State<NotebookScreen>
     });
     link.start();
   }
+
+  // ---------------------------------------------------------------- layout
+
+  double _pageWidthFor(double viewportWidth) =>
+      math.min(viewportWidth - 2 * (_sidePadding + _band), _maxPageWidth);
+
+  /// On-screen page width at [zoom].
+  double _zoomedWidth([double? zoom]) =>
+      _pageWidthFor(_viewport.width) * (zoom ?? _zoom);
 }
