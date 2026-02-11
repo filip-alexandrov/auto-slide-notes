@@ -103,4 +103,17 @@ class _NotebookScreenState extends State<NotebookScreen>
   /// On-screen page width at [zoom].
   double _zoomedWidth([double? zoom]) =>
       _pageWidthFor(_viewport.width) * (zoom ?? _zoom);
+
+  /// Width of the horizontally scrollable content at page width [w].
+  double _contentWidth(double w) =>
+      math.max(_viewport.width, w + 2 * (_sidePadding + _band));
+
+  /// Top of page [index]'s list item, in list content coordinates.
+  double _itemTop(int index, double w) {
+    var y = _pageGap; // list top padding
+    for (var i = 0; i < index; i++) {
+      y += _itemExtent(_doc!.pages[i], w);
+    }
+    return y;
+  }
 }
