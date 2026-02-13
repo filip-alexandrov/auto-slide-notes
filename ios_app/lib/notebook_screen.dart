@@ -116,4 +116,118 @@ class _NotebookScreenState extends State<NotebookScreen>
     }
     return y;
   }
+
+  // ---------------------------------------------------------------- UI
+
+  @override
+  Widget build(BuildContext context) {
+    final doc = _doc;
+    if (doc == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    return PopScope(
+      // Leaving goes through _close so the note is saved first. This also
+      // disables the iOS edge-swipe, which would fight with drawing.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _close();
+      },
+      child: _buildScaffold(context, doc),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, NoteDocument doc) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE9E9EE),
+      appBar: _buildToolbar(context, doc),
+      body: Stack(
+        children: [
+          Listener(
+            // Raw pointer tracking for pinch zoom; it doesn't compete with
+            // the scroll views' gestures, it just freezes them while pinching.
+            onPointerDown: _onTouchDown,
+            onPointerMove: _onTouchMove,
+            onPointerUp: _onTouchEnd,
+            onPointerCancel: _onTouchEnd,
+            child: ScrollConfiguration(
+              behavior: _NotebookScrollBehavior(
+                fingerDraws: _settings.fingerDraws,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  _viewport = constraints.biggest;
+                  final width = _zoomedWidth();
+                  final physics = _pinch != null
+                      ? const NeverScrollableScrollPhysics()
+                      : null;
+                  return SingleChildScrollView(
+                    controller: _hScroll,
+                    scrollDirection: Axis.horizontal,
+                    physics: physics,
+                    child: SizedBox(
+                      width: _contentWidth(width),
+                      height: constraints.maxHeight,
+                      child: ListView.builder(
+                        controller: _scroll,
+                        physics: physics,
+                        // Room after the last page so its bottom edge can
+                        // be scrolled all the way up to the top.
+                        padding: EdgeInsets.only(
+                          top: _pageGap,
+                          bottom: math.max(
+                            0,
+                            constraints.maxHeight - _band - _pageGap,
+                          ),
+                        ),
+                        itemCount: doc.pages.length,
+                        // Exact extents keep offsets stable when pages are
+                        // appended and make zoom anchoring exact.
+                        itemExtentBuilder: (i, _) => i < doc.pages.length
+                            ? _itemExtent(doc.pages[i], width)
+                            : null,
+                        itemBuilder: (context, i) =>
+                            _buildPage(doc.pages[i], i, width),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          if (_zoom != 1)
+            Positioned(
+              left: 16,
+              bottom: 16,
+              child: ActionChip(
+                avatar: const Icon(Icons.zoom_out_map, size: 18),
+                label: Text('${(_zoom * 100).round()}%'),
+                tooltip: 'Reset zoom',
+                onPressed: _resetZoom,
+              ),
+            ),
+          if (doc.pages.isEmpty)
+            const Center(
+              child: Text(
+                'No pages yet.\nScreenshots from the Mac appear here, '
+                'or add a blank page from the toolbar.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black45, fontSize: 16),
+              ),
+            )
+          else
+            Positioned(
+              right: 16,
+              bottom: 16,
+              // Purely informational; let taps reach page buttons under it.
+              child: IgnorePointer(
+                child: _PageIndicator(
+                  current: math.min(_currentPage + 1, doc.pages.length),
+                  total: doc.pages.length,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
