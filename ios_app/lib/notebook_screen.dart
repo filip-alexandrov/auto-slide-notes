@@ -230,4 +230,95 @@ class _NotebookScreenState extends State<NotebookScreen>
       ),
     );
   }
+
+  Widget _buildPage(NotePage page, int index, double width) {
+    Widget extend(PageSide side) => _ResizeButtons(
+      side: side,
+      onGrow: () => _resizePage(page, side, grow: true),
+      onShrink: page.removableOn(side) > 0
+          ? () => _resizePage(page, side, grow: false)
+          : null,
+    );
+
+    return SizedBox(
+      height: _itemExtent(page, width),
+      child: Column(
+        children: [
+          // Buttons are pinned to the page's top-left corner area so they
+          // don't move when the page is resized.
+          SizedBox(
+            height: _band,
+            width: width,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: extend(PageSide.top),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: _band,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: extend(PageSide.left),
+                ),
+              ),
+              Material(
+                elevation: 2,
+                child: SizedBox(
+                  width: width,
+                  child: PageCanvas(
+                    key: ValueKey(page.id),
+                    page: page,
+                    imageFile: page.imageFile == null
+                        ? null
+                        : _store!.imageFile(page.imageFile!),
+                    settings: _settings,
+                    onStrokeAdded: (p, s) => _recordEdit(_Edit.add(p, [s])),
+                    onStrokesErased: (p, s) => _recordEdit(_Edit.erase(p, s)),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: _band,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: extend(PageSide.right),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: _band,
+            width: width,
+            child: Row(
+              children: [
+                extend(PageSide.bottom),
+                const SizedBox(width: 20),
+                _DeleteButton(
+                  tooltip: page.slideId != null
+                      ? 'Delete slide'
+                      : 'Delete page',
+                  onPressed: () => _deletePage(page),
+                ),
+                const Spacer(),
+                Text(
+                  page.slideId != null
+                      ? '${index + 1} · slide'
+                      : '${index + 1}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
