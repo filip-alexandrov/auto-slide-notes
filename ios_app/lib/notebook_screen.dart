@@ -321,4 +321,256 @@ class _NotebookScreenState extends State<NotebookScreen>
       ),
     );
   }
+
+  PreferredSizeWidget _buildToolbar(BuildContext context, NoteDocument doc) {
+    final s = _settings;
+    final windowWidth = MediaQuery.sizeOf(context).width;
+    final singleRow = windowWidth >= _singleRowMinWidth;
+    // Slide Over and similar: document actions join the tool row.
+    final compact = windowWidth < _compactMaxWidth;
+
+    Widget toolButton(DrawTool tool, IconData icon, String tip) => IconButton(
+      tooltip: tip,
+      isSelected: s.tool == tool,
+      icon: Icon(icon),
+      style: IconButton.styleFrom(
+        backgroundColor: s.tool == tool ? Colors.black12 : null,
+      ),
+      onPressed: () => setState(() => _settings = s.copyWith(tool: tool)),
+    );
+
+    final docActions = IconTheme.merge(
+      data: const IconThemeData(color: Colors.black87),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Undo',
+            icon: const Icon(Icons.undo),
+            onPressed: _undo.isEmpty ? null : _applyUndo,
+          ),
+          IconButton(
+            tooltip: 'Redo',
+            icon: const Icon(Icons.redo),
+            onPressed: _redo.isEmpty ? null : _applyRedo,
+          ),
+          IconButton(
+            tooltip: 'Add blank page',
+            icon: const Icon(Icons.note_add_outlined),
+            onPressed: _addBlankPage,
+          ),
+          Builder(
+            builder: (btnContext) => IconButton(
+              tooltip: 'Export PDF',
+              icon: _exporting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.picture_as_pdf_outlined),
+              onPressed: _exporting ? null : () => _exportPdf(btnContext),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Groups are spread evenly over all the width they get. Only in very
+    // narrow windows (Slide Over) is the row scaled down to fit.
+    final drawingToolsRow = IconTheme.merge(
+      data: const IconThemeData(color: Colors.black87),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              toolButton(DrawTool.pen, Icons.edit, 'Pen'),
+              toolButton(
+                DrawTool.highlighter,
+                Icons.border_color,
+                'Highlighter',
+              ),
+              toolButton(DrawTool.eraser, Icons.auto_fix_normal, 'Eraser'),
+            ],
+          ),
+          // Colors and widths belong to the highlighter while it is selected,
+          // otherwise to the pen (picking one from the eraser switches to pen).
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final c in s.isHighlighter ? _highlighterColors : _penColors)
+                _ColorSwatch(
+                  color: c,
+                  selected:
+                      c == (s.isHighlighter ? s.highlighterColor : s.penColor),
+                  onTap: () => setState(
+                    () => _settings = s.isHighlighter
+                        ? s.copyWith(highlighterColor: c)
+                        : s.copyWith(penColor: c, tool: DrawTool.pen),
+                  ),
+                ),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (w, dot)
+                  in s.isHighlighter ? _highlighterWidths : _penWidths)
+                _WidthButton(
+                  dot: dot,
+                  color: s.isHighlighter ? s.highlighterColor : 0xDD000000,
+                  selected:
+                      w == (s.isHighlighter ? s.highlighterWidth : s.penWidth),
+                  onTap: () => setState(
+                    () => _settings = s.isHighlighter
+                        ? s.copyWith(highlighterWidth: w)
+                        : s.copyWith(penWidth: w),
+                  ),
+                ),
+            ],
+          ),
+          PopupMenuButton<Smoothing>(
+            tooltip: 'Smoothing: ${s.smoothing.label}',
+            initialValue: s.smoothing,
+            onSelected: (level) {
+              setState(() => _settings = _settings.copyWith(smoothing: level));
+              _prefs?.setString(_smoothingKey, level.name);
+            },
+            itemBuilder: (_) => [
+              for (final level in Smoothing.values)
+                CheckedPopupMenuItem(
+                  value: level,
+                  checked: level == s.smoothing,
+                  child: Text('${level.label} smoothing'),
+                ),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.gesture, size: 22),
+                  Text(
+                    s.smoothing.label,
+                    style: const TextStyle(fontSize: 10, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (compact) docActions,
+        ],
+      ),
+    );
+
+    final drawingTools = LayoutBuilder(
+      builder: (context, constraints) => FittedBox(
+        fit: BoxFit.scaleDown,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: drawingToolsRow,
+        ),
+      ),
+    );
+
+    final title = InkWell(
+      onTap: _rename,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: singleRow ? 220 : 400),
+          child: Text(doc.title, overflow: TextOverflow.ellipsis),
+        ),
+      ),
+    );
+
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 1,
+      titleSpacing: 0,
+      automaticallyImplyLeading: false,
+      title: Row(
+        children: [
+          if (compact)
+            IconButton(
+              tooltip: 'Notes',
+              onPressed: _closing ? null : _close,
+              icon: const Icon(Icons.grid_view_rounded, size: 20),
+            )
+          else
+            TextButton.icon(
+              onPressed: _closing ? null : _close,
+              icon: const Icon(Icons.grid_view_rounded, size: 20),
+              label: const Text('Notes'),
+            ),
+          const SizedBox(width: 4),
+          _StatusDot(link: _link!),
+          const SizedBox(width: 8),
+          // Tap the title to rename the note. With the tools in the same
+          // row its width is capped so the tools always get their space;
+          // otherwise it takes what is left next to the actions.
+          if (singleRow) title else Flexible(child: title),
+          if (singleRow) ...[
+            const SizedBox(width: 12),
+            Expanded(child: drawingTools),
+          ],
+        ],
+      ),
+      actions: [
+        if (singleRow) const VerticalDivider(indent: 12, endIndent: 12),
+        if (!compact) docActions,
+        PopupMenuButton<String>(
+          onSelected: (v) {
+            switch (v) {
+              case 'finger':
+                setState(
+                  () => _settings = s.copyWith(fingerDraws: !s.fingerDraws),
+                );
+              case 'rename':
+                _rename();
+              case 'bin':
+                _openRecycleBin();
+            }
+          },
+          itemBuilder: (_) => [
+            CheckedPopupMenuItem(
+              value: 'finger',
+              checked: s.fingerDraws,
+              child: const Text('Draw with finger'),
+            ),
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              value: 'bin',
+              child: Text(
+                doc.trash.isEmpty
+                    ? 'Recycle bin'
+                    : 'Recycle bin (${doc.trash.length})',
+              ),
+            ),
+            const PopupMenuItem(value: 'rename', child: Text('Rename…')),
+          ],
+        ),
+        const SizedBox(width: 4),
+      ],
+      // Narrower windows (e.g. portrait) give the drawing tools their own
+      // full-width row so nothing has to scroll or get cut off.
+      bottom: singleRow
+          ? null
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(_toolRowHeight),
+              child: Container(
+                height: _toolRowHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0x14000000))),
+                ),
+                child: drawingTools,
+              ),
+            ),
+    );
+  }
 }
