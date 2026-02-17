@@ -574,3 +574,35 @@ class _NotebookScreenState extends State<NotebookScreen>
     );
   }
 }
+
+class _ColorSwatch extends StatelessWidget {
+  const _ColorSwatch({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 26,
+        height: 26,
+        margin: const EdgeInsets.symmetric(horizontal: 3),
+        decoration: BoxDecoration(
+          color: Color(color),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? Colors.black : Colors.black26,
+            width: selected ? 3 : 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
