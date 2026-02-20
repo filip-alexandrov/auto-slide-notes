@@ -606,3 +606,42 @@ class _ColorSwatch extends StatelessWidget {
     );
   }
 }
+
+class _WidthButton extends StatelessWidget {
+  const _WidthButton({
+    required this.dot,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final double dot;
+  final int color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: selected ? Colors.black12 : null,
+        ),
+        alignment: Alignment.center,
+        child: Container(
+          width: dot,
+          height: dot,
+          decoration: BoxDecoration(
+            color: Color(color),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+}
