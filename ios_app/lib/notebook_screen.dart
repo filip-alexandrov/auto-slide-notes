@@ -117,6 +117,13 @@ class _NotebookScreenState extends State<NotebookScreen>
     return y;
   }
 
+  void _addBlankPage() {
+    final doc = _doc!;
+    doc.appendPage(NotePage(id: DocumentStore.newPageId(), aspect: 1));
+    setState(() {});
+    _jumpToPage(doc.pages.length - 1);
+  }
+
   // ---------------------------------------------------------------- UI
 
   @override
