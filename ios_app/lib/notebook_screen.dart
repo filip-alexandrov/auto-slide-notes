@@ -95,6 +95,18 @@ class _NotebookScreenState extends State<NotebookScreen>
     link.start();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _pencilChannel.setMethodCallHandler(null);
+    _link?.dispose();
+    _saver?.flush();
+    _saver?.dispose();
+    _scroll.dispose();
+    _hScroll.dispose();
+    super.dispose();
+  }
+
   // ---------------------------------------------------------------- layout
 
   double _pageWidthFor(double viewportWidth) =>
