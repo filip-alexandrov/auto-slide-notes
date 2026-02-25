@@ -22,4 +22,22 @@ class DocumentStore {
   File get _docFile => File('${root.path}/document.json');
   File get _metaFile => File('${root.path}/meta.json');
   File get _thumbFile => File('${root.path}/thumbnail.png');
+
+  File imageFile(String name) => File('${imagesDir.path}/$name');
+
+  Future<NoteDocument> load() async {
+    await imagesDir.create(recursive: true);
+    if (await _docFile.exists()) {
+      try {
+        final json = jsonDecode(await _docFile.readAsString());
+        final doc = NoteDocument.fromJson(json as Map<String, dynamic>);
+        await _collectStrayImages(doc);
+        return doc;
+      } catch (_) {
+        // Keep the unreadable file around for manual recovery.
+        await _docFile.rename('${_docFile.path}.corrupt');
+      }
+    }
+    return NoteDocument(title: 'Notes');
+  }
 }
