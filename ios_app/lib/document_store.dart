@@ -40,4 +40,32 @@ class DocumentStore {
     }
     return NoteDocument(title: 'Notes');
   }
+
+  /// Writes the document and its library metadata. [touch] updates the
+  /// modification date (not wanted for a plain rename).
+  Future<void> save(NoteDocument doc, {bool touch = true}) async {
+    final previous = touch ? null : (await summary())?.modified;
+    await _writeAtomic(_docFile, jsonEncode(doc.toJson()));
+    await _writeAtomic(
+      _metaFile,
+      jsonEncode({
+        'title': doc.title,
+        'created': doc.created.toIso8601String(),
+        'modified': (previous ?? DateTime.now()).toIso8601String(),
+        'pageCount': doc.pages.length,
+      }),
+    );
+  }
+
+  static int _tmpCounter = 0;
+
+  static Future<void> _writeAtomic(File file, String contents) async {
+    // A unique temp name per write: two saves of the same note must never
+    // share (and rename away) each other's temp file.
+    final tmp = File(
+      '${file.path}.${DateTime.now().microsecondsSinceEpoch}_${_tmpCounter++}.tmp',
+    );
+    await tmp.writeAsString(contents, flush: true);
+    await tmp.rename(file.path);
+  }
 }
