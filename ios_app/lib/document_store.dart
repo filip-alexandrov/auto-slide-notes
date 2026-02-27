@@ -69,3 +69,33 @@ class DocumentStore {
     await tmp.rename(file.path);
   }
 }
+
+/// Coalesces rapid document changes into a single write.
+class AutoSaver {
+  AutoSaver(this.store, this.doc) {
+    doc.addListener(_schedule);
+  }
+
+  final DocumentStore store;
+  final NoteDocument doc;
+  Timer? _timer;
+
+  /// Saves run strictly one after another on this chain. It never holds an
+  /// error, so one failed save can't block the ones after it.
+  Future<void> _chain = Future.value();
+
+  void _schedule() {
+    _thumbStale = true;
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 800), flush);
+  }
+
+  /// Saves the current state; with [thumbnail] also refreshes the library
+  /// preview (done when leaving the note rather than on every autosave).
+  /// Overlapping calls are queued, never run in parallel.
+  Future<void> flush({bool thumbnail = false}) {
+    _timer?.cancel();
+    _timer = null;
+    return _chain = _chain.then((_) => _save(thumbnail));
+  }
+}
