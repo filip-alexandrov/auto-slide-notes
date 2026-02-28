@@ -98,4 +98,29 @@ class AutoSaver {
     _timer = null;
     return _chain = _chain.then((_) => _save(thumbnail));
   }
+
+  Future<void> _save(bool thumbnail) async {
+    try {
+      await store.save(doc);
+    } catch (e) {
+      // Keep the change pending and try again shortly.
+      debugPrint('Autosave failed, retrying: $e');
+      _timer?.cancel();
+      _timer = Timer(const Duration(seconds: 2), flush);
+      return;
+    }
+    if (thumbnail && _thumbStale) {
+      _thumbStale = false;
+      try {
+        await store.saveThumbnail(doc);
+      } catch (_) {
+        _thumbStale = true; // A missing preview must not block saving.
+      }
+    }
+  }
+
+  void dispose() {
+    doc.removeListener(_schedule);
+    _timer?.cancel();
+  }
 }
