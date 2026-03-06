@@ -107,6 +107,19 @@ class _NotebookScreenState extends State<NotebookScreen>
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // iPadOS drops peer-to-peer links in the background; reconnect on return.
+    if (state == AppLifecycleState.resumed) {
+      _link?.start();
+    } else if (state == AppLifecycleState.paused) {
+      _link?.stop();
+      _saver?.flush(thumbnail: true);
+    } else if (state == AppLifecycleState.inactive) {
+      _saver?.flush();
+    }
+  }
+
   // ---------------------------------------------------------------- layout
 
   double _pageWidthFor(double viewportWidth) =>
