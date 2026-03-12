@@ -607,6 +607,27 @@ class _NotebookScreenState extends State<NotebookScreen>
   }
 }
 
+/// An undoable change on one page.
+class _Edit {
+  _Edit._(this.apply, this.revert, {this.deletedPage});
+
+  _Edit.add(NotePage page, List<Stroke> strokes)
+    : this._(
+        () => page.insertStrokes(strokes),
+        () => page.removeStrokes(strokes),
+      );
+
+  _Edit.erase(NotePage page, List<Stroke> strokes)
+    : this._(
+        () => page.removeStrokes(strokes),
+        () => page.insertStrokes(strokes),
+      );
+
+  final VoidCallback apply;
+  final VoidCallback revert;
+  final NotePage? deletedPage;
+}
+
 class _ColorSwatch extends StatelessWidget {
   const _ColorSwatch({
     required this.color,
