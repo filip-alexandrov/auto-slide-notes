@@ -142,6 +142,29 @@ class _NotebookScreenState extends State<NotebookScreen>
     return y;
   }
 
+  void _recordEdit(_Edit edit) {
+    _undo.add(edit);
+    _redo.clear();
+    _doc?.markDirty();
+    setState(() {});
+  }
+
+  void _applyUndo() {
+    if (_undo.isEmpty) return;
+    final e = _undo.removeLast()..revert();
+    _redo.add(e);
+    _doc?.markDirty();
+    setState(() {});
+  }
+
+  void _applyRedo() {
+    if (_redo.isEmpty) return;
+    final e = _redo.removeLast()..apply();
+    _undo.add(e);
+    _doc?.markDirty();
+    setState(() {});
+  }
+
   void _addBlankPage() {
     final doc = _doc!;
     doc.appendPage(NotePage(id: DocumentStore.newPageId(), aspect: 1));
