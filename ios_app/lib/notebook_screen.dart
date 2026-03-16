@@ -29,6 +29,14 @@ const _penColors = <int>[
   0xFF8E24AA, // purple
 ];
 
+const _highlighterColors = <int>[
+  0xFFFFD600, // yellow
+  0xFF76FF03, // green
+  0xFFFF4081, // pink
+  0xFF40C4FF, // blue
+  0xFFFF9100, // orange
+];
+
 /// Width choices (page units) and the dot size shown for each.
 const _penWidths = <(double, double)>[(2, 5), (3, 8), (6, 13)];
 const _highlighterWidths = <(double, double)>[(12, 6), (18, 10), (28, 15)];
