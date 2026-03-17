@@ -150,6 +150,25 @@ class _NotebookScreenState extends State<NotebookScreen>
     return y;
   }
 
+  double _itemExtent(NotePage p, double width) =>
+      _band + width * p.aspect + _band + _pageGap;
+
+  void _updateCurrentPage() {
+    final doc = _doc;
+    if (doc == null || !_scroll.hasClients) return;
+    final width = _zoomedWidth();
+    // The page whose area covers the vertical middle of the viewport.
+    final probe = _scroll.offset + _scroll.position.viewportDimension / 2;
+    var y = _pageGap;
+    var index = 0;
+    for (var i = 0; i < doc.pages.length; i++) {
+      y += _itemExtent(doc.pages[i], width);
+      index = i;
+      if (y > probe) break;
+    }
+    if (index != _currentPage) setState(() => _currentPage = index);
+  }
+
   void _recordEdit(_Edit edit) {
     _undo.add(edit);
     _redo.clear();
