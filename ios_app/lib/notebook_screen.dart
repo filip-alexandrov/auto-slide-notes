@@ -169,6 +169,25 @@ class _NotebookScreenState extends State<NotebookScreen>
     if (index != _currentPage) setState(() => _currentPage = index);
   }
 
+  void _jumpToPage(int index) {
+    final doc = _doc;
+    if (doc == null || !_scroll.hasClients) return;
+    final width = _zoomedWidth();
+    var offset = 0.0;
+    for (var i = 0; i < index; i++) {
+      offset += _itemExtent(doc.pages[i], width);
+    }
+    // Wait a frame so a just-appended page is included in maxScrollExtent.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scroll.hasClients) return;
+      _scroll.animateTo(
+        math.min(offset, _scroll.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
   void _recordEdit(_Edit edit) {
     _undo.add(edit);
     _redo.clear();
@@ -744,6 +763,28 @@ class _WidthButton extends StatelessWidget {
             shape: BoxShape.circle,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PageIndicator extends StatelessWidget {
+  const _PageIndicator({required this.current, required this.total});
+
+  final int current;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        '$current / $total',
+        style: const TextStyle(color: Colors.white, fontSize: 13),
       ),
     );
   }
