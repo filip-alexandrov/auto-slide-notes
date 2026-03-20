@@ -697,6 +697,49 @@ class _Edit {
   final NotePage? deletedPage;
 }
 
+/// Soft red pill for deleting a page or slide.
+class _DeleteButton extends StatelessWidget {
+  const _DeleteButton({required this.tooltip, required this.onPressed});
+
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  static const _red = Color(0xFFD93025);
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: const Color(0xFFFDECEA),
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.delete_outline_rounded, size: 16, color: _red),
+                SizedBox(width: 4),
+                Text(
+                  'Delete',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ColorSwatch extends StatelessWidget {
   const _ColorSwatch({
     required this.color,
