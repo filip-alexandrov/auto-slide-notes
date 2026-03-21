@@ -150,6 +150,31 @@ class _NotebookScreenState extends State<NotebookScreen>
     return y;
   }
 
+  void _deletePage(NotePage page) {
+    final doc = _doc!;
+    final index = doc.pages.indexOf(page);
+    if (index < 0) return;
+    _recordEdit(_Edit.deletePage(doc, page)..apply());
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('Page ${index + 1} moved to the recycle bin'),
+        behavior: SnackBarBehavior.floating,
+        width: 360,
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            // Only undo if the delete is still the latest edit.
+            if (_undo.isNotEmpty && _undo.last.deletedPage == page) {
+              _applyUndo();
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   double _itemExtent(NotePage p, double width) =>
       _band + width * p.aspect + _band + _pageGap;
 
@@ -679,6 +704,13 @@ class _NotebookScreenState extends State<NotebookScreen>
 /// An undoable change on one page.
 class _Edit {
   _Edit._(this.apply, this.revert, {this.deletedPage});
+
+  /// Deleting moves the page to the recycle bin; undo takes it back out.
+  _Edit.deletePage(NoteDocument doc, NotePage page)
+    : this._(() => doc.trashPage(page), () {
+        final entry = doc.trashEntryFor(page);
+        if (entry != null) doc.restorePage(entry);
+      }, deletedPage: page);
 
   _Edit.add(NotePage page, List<Stroke> strokes)
     : this._(
