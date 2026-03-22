@@ -66,3 +66,57 @@ Future<File> exportPdf(NoteDocument doc, DocumentStore store) async {
   await file.writeAsBytes(await pdf.save(), flush: true);
   return file;
 }
+
+void _paintStrokes(
+  PdfGraphics canvas,
+  PdfPoint size,
+  List<Stroke> strokes,
+  double width,
+) {
+  final scale = size.x / width;
+  // PDF origin is bottom-left; page coordinates are top-left.
+  double x(double v) => v * scale;
+  double y(double v) => size.y - v * scale;
+
+  final ordered = [
+    ...strokes.where((s) => s.tool == StrokeTool.highlighter),
+    ...strokes.where((s) => s.tool == StrokeTool.pen),
+  ];
+
+  for (final s in ordered) {
+    if (s.points.isEmpty) continue;
+    canvas.saveContext();
+    final color = PdfColor.fromInt(s.color);
+    if (s.tool == StrokeTool.highlighter) {
+      canvas.setGraphicState(PdfGraphicState(opacity: highlighterOpacity));
+    }
+    if (s.points.length == 1) {
+      final p = s.points.first;
+      final r = s.width * scale / 2;
+      canvas
+        ..setFillColor(color)
+        ..drawEllipse(x(p.dx), y(p.dy), r, r)
+        ..fillPath();
+    } else {
+      canvas
+        ..setStrokeColor(color)
+        ..setLineWidth(s.width * scale)
+        ..setLineCap(PdfLineCap.round)
+        ..setLineJoin(PdfLineJoin.round);
+      traceSmooth(
+        s.points,
+        moveTo: (p) => canvas.moveTo(x(p.dx), y(p.dy)),
+        cubicTo: (c1, c2, p) => canvas.curveTo(
+          x(c1.dx),
+          y(c1.dy),
+          x(c2.dx),
+          y(c2.dy),
+          x(p.dx),
+          y(p.dy),
+        ),
+      );
+      canvas.strokePath();
+    }
+    canvas.restoreContext();
+  }
+}
