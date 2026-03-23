@@ -243,6 +243,37 @@ class _NotebookScreenState extends State<NotebookScreen>
     _jumpToPage(doc.pages.length - 1);
   }
 
+  Future<void> _exportPdf(BuildContext buttonContext) async {
+    final box = buttonContext.findRenderObject() as RenderBox?;
+    final origin = box == null
+        ? const Rect.fromLTWH(0, 0, 1, 1)
+        : box.localToGlobal(Offset.zero) & box.size;
+    if (_doc!.pages.isEmpty) {
+      _showError('Nothing to export yet.');
+      return;
+    }
+    setState(() => _exporting = true);
+    try {
+      await _saver!.flush();
+      final file = await exportPdf(_doc!, _store!);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/pdf')],
+          sharePositionOrigin: origin,
+        ),
+      );
+    } catch (e) {
+      _showError('PDF export failed: $e');
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  void _showError(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
   // ---------------------------------------------------------------- UI
 
   @override
