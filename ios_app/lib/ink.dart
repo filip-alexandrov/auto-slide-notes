@@ -19,3 +19,29 @@ void traceSmooth(
     cubicTo(p1 + (p2 - p0) / 6, p2 - (p3 - p1) / 6, p2);
   }
 }
+
+/// How strongly Pencil input is smoothed; selectable in the toolbar.
+enum Smoothing {
+  off('Off', 1.0, 1.0, 0),
+  low('Low', 0.5, 0.9, 0),
+  medium('Medium', 0.35, 0.8, 0),
+  high('High', 0.25, 0.65, 1),
+  max('Max', 0.15, 0.5, 2);
+
+  const Smoothing(
+    this.label,
+    this.slowAlpha,
+    this.fastAlpha,
+    this.finishPasses,
+  );
+
+  final String label;
+
+  /// Share of each new sample that is kept, for slow and fast pen movement
+  /// (1 = raw input, lower = smoother but the ink trails the tip more).
+  final double slowAlpha;
+  final double fastAlpha;
+
+  /// Extra smoothing passes applied once the Pencil is lifted.
+  final int finishPasses;
+}

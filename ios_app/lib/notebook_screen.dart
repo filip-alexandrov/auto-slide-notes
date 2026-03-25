@@ -14,6 +14,8 @@ import 'page_canvas.dart';
 import 'pdf_export.dart';
 import 'slide_link.dart';
 
+const _smoothingKey = 'smoothing';
+
 const double _maxPageWidth = 1000;
 const double _sidePadding = 8;
 const double _pageGap = 12;
