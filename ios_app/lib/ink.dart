@@ -45,3 +45,48 @@ enum Smoothing {
   /// Extra smoothing passes applied once the Pencil is lifted.
   final int finishPasses;
 }
+
+/// Filters raw stylus samples before they become stroke points: drops
+/// near-duplicate samples and damps hand/sensor jitter with a
+/// speed-adaptive moving average (slow movement is smoothed more, fast
+/// movement barely lags).
+class InkStabilizer {
+  static const double _minDistance = 0.75;
+
+  /// Movement (in page units) at which smoothing is at its weakest.
+  static const double _fastDistance = 12;
+
+  Smoothing _level = Smoothing.medium;
+  Offset? _last;
+
+  void reset(Offset start, Smoothing level) {
+    _last = start;
+    _level = level;
+  }
+
+  /// Returns the point to append, or null if the sample should be skipped.
+  Offset? add(Offset raw) {
+    final last = _last;
+    if (last == null) return _last = raw;
+    final d = (raw - last).distance;
+    if (d < _minDistance) return null;
+    final t = (d / _fastDistance).clamp(0.0, 1.0);
+    final alpha = _level.slowAlpha + (_level.fastAlpha - _level.slowAlpha) * t;
+    return _last = last + (raw - last) * alpha;
+  }
+}
+
+/// Smooths a finished stroke with [passes] rounds of a 1-2-1 weighted
+/// average. Endpoints stay fixed so the stroke starts and ends where drawn.
+List<Offset> relax(List<Offset> pts, int passes) {
+  var cur = pts;
+  for (var n = 0; n < passes && cur.length > 2; n++) {
+    cur = [
+      cur.first,
+      for (var i = 1; i < cur.length - 1; i++)
+        (cur[i - 1] + cur[i] * 2 + cur[i + 1]) / 4,
+      cur.last,
+    ];
+  }
+  return cur;
+}

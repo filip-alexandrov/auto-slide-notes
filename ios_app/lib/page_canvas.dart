@@ -33,6 +33,8 @@ class ToolSettings {
   final double penWidth;
   final double highlighterWidth;
 
+  final Smoothing smoothing;
+
   bool get isHighlighter => tool == DrawTool.highlighter;
   int get color => isHighlighter ? highlighterColor : penColor;
   double get strokeWidth => isHighlighter ? highlighterWidth : penWidth;
