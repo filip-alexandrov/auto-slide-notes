@@ -33,6 +33,9 @@ class ToolSettings {
   final double penWidth;
   final double highlighterWidth;
 
+  /// When false, only the Apple Pencil draws and fingers scroll.
+  final bool fingerDraws;
+
   final Smoothing smoothing;
 
   bool get isHighlighter => tool == DrawTool.highlighter;

@@ -734,6 +734,20 @@ class _NotebookScreenState extends State<NotebookScreen>
   }
 }
 
+/// Only lets fingers (and trackpads) scroll, so the Pencil is free to draw.
+/// With "Draw with finger" enabled, touch is reserved for drawing too.
+class _NotebookScrollBehavior extends MaterialScrollBehavior {
+  const _NotebookScrollBehavior({required this.fingerDraws});
+
+  final bool fingerDraws;
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    if (!fingerDraws) PointerDeviceKind.touch,
+    PointerDeviceKind.trackpad,
+  };
+}
+
 /// An undoable change on one page.
 class _Edit {
   _Edit._(this.apply, this.revert, {this.deletedPage});
