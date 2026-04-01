@@ -23,6 +23,9 @@ const double _pageGap = 12;
 /// Space around each page that holds its "extend" buttons.
 const double _band = 34;
 
+/// Apple Pencil double-tap events from ios/Runner/AppDelegate.swift.
+const _pencilChannel = MethodChannel('ipad_notes/pencil');
+
 const _penColors = <int>[
   0xFF1A1A1A, // black
   0xFF1E5EFF, // blue
@@ -68,6 +71,14 @@ class _NotebookScreenState extends State<NotebookScreen>
 
   final _scroll = ScrollController();
   ToolSettings _settings = const ToolSettings();
+
+  /// Tool to return to when a Pencil double-tap leaves the eraser.
+  DrawTool _toolBeforeEraser = DrawTool.pen;
+  final _undo = <_Edit>[];
+  final _redo = <_Edit>[];
+  bool _exporting = false;
+  bool _closing = false;
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -175,6 +186,18 @@ class _NotebookScreenState extends State<NotebookScreen>
         ),
       ),
     );
+  }
+
+  void _togglePenEraser() {
+    if (!mounted) return;
+    setState(() {
+      if (_settings.tool == DrawTool.eraser) {
+        _settings = _settings.copyWith(tool: _toolBeforeEraser);
+      } else {
+        _toolBeforeEraser = _settings.tool;
+        _settings = _settings.copyWith(tool: DrawTool.eraser);
+      }
+    });
   }
 
   double _itemExtent(NotePage p, double width) =>
