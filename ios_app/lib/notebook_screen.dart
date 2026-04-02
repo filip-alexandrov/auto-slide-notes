@@ -26,6 +26,9 @@ const double _band = 34;
 /// Apple Pencil double-tap events from ios/Runner/AppDelegate.swift.
 const _pencilChannel = MethodChannel('ipad_notes/pencil');
 
+const double _minZoom = 0.5;
+const double _maxZoom = 4;
+
 const _penColors = <int>[
   0xFF1A1A1A, // black
   0xFF1E5EFF, // blue
@@ -161,6 +164,27 @@ class _NotebookScreenState extends State<NotebookScreen>
       y += _itemExtent(_doc!.pages[i], w);
     }
     return y;
+  }
+
+  // ---------------------------------------------------------------- zoom
+
+  void _onTouchDown(PointerDownEvent e) {
+    if (e.kind != PointerDeviceKind.touch) return;
+    _touches[e.pointer] = e.localPosition;
+    if (_touches.length == 2) _startPinch();
+  }
+
+  void _onTouchMove(PointerMoveEvent e) {
+    if (!_touches.containsKey(e.pointer)) return;
+    _touches[e.pointer] = e.localPosition;
+    if (_pinch != null) _updatePinch();
+  }
+
+  void _onTouchEnd(PointerEvent e) {
+    if (_touches.remove(e.pointer) == null) return;
+    if (_pinch != null && _touches.length < 2) {
+      setState(() => _pinch = null);
+    }
   }
 
   void _deletePage(NotePage page) {
