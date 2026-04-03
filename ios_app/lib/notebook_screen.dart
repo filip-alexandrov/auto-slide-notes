@@ -187,6 +187,39 @@ class _NotebookScreenState extends State<NotebookScreen>
     }
   }
 
+  (Offset, double) _focalAndSpan() {
+    final pts = _touches.values.take(2).toList();
+    return ((pts[0] + pts[1]) / 2, (pts[0] - pts[1]).distance);
+  }
+
+  /// Remembers which document point is under the fingers, as a fraction of
+  /// the page it is on, so it can be kept there while the zoom changes.
+  void _startPinch() {
+    final doc = _doc;
+    if (doc == null || doc.pages.isEmpty || !_scroll.hasClients) return;
+    final (focal, span) = _focalAndSpan();
+    if (span < 1) return;
+    final w = _zoomedWidth();
+    final contentY = _scroll.offset + focal.dy;
+    var index = 0;
+    while (index < doc.pages.length - 1 && _itemTop(index + 1, w) <= contentY) {
+      index++;
+    }
+    final page = doc.pages[index];
+    final pageTop = _itemTop(index, w) + _band;
+    final hOffset = _hScroll.hasClients ? _hScroll.offset : 0.0;
+    final pageLeft = (_contentWidth(w) - w) / 2;
+    setState(() {
+      _pinch = _PinchAnchor(
+        startZoom: _zoom,
+        startSpan: span,
+        pageIndex: index,
+        fx: (hOffset + focal.dx - pageLeft) / w,
+        fy: (contentY - pageTop) / (w * page.aspect),
+      );
+    });
+  }
+
   void _deletePage(NotePage page) {
     final doc = _doc!;
     final index = doc.pages.indexOf(page);
@@ -793,6 +826,25 @@ class _NotebookScrollBehavior extends MaterialScrollBehavior {
     if (!fingerDraws) PointerDeviceKind.touch,
     PointerDeviceKind.trackpad,
   };
+}
+
+class _PinchAnchor {
+  _PinchAnchor({
+    required this.startZoom,
+    required this.startSpan,
+    required this.pageIndex,
+    required this.fx,
+    required this.fy,
+  });
+
+  final double startZoom;
+  final double startSpan;
+
+  /// Page under the fingers and the focal point's position on it
+  /// (0..1 across its width / height; may lie outside for the margins).
+  final int pageIndex;
+  final double fx;
+  final double fy;
 }
 
 /// An undoable change on one page.
