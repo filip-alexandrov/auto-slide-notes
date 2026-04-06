@@ -220,6 +220,34 @@ class _NotebookScreenState extends State<NotebookScreen>
     });
   }
 
+  void _updatePinch() {
+    final pinch = _pinch!;
+    final (focal, span) = _focalAndSpan();
+    final zoom = (pinch.startZoom * span / pinch.startSpan).clamp(
+      _minZoom,
+      _maxZoom,
+    );
+    setState(() => _zoom = zoom);
+
+    // Put the anchored document point back under the (possibly moved)
+    // fingers. Offsets are set before layout; the new extents are applied
+    // in the same frame.
+    final w = _zoomedWidth();
+    final page = _doc!.pages[pinch.pageIndex];
+    final y =
+        _itemTop(pinch.pageIndex, w) +
+        _band +
+        pinch.fy * w * page.aspect -
+        focal.dy;
+    _scroll.jumpTo(math.max(0, y));
+
+    if (_hScroll.hasClients) {
+      final cw = _contentWidth(w);
+      final x = (cw - w) / 2 + pinch.fx * w - focal.dx;
+      _hScroll.jumpTo(x.clamp(0.0, math.max(0.0, cw - _viewport.width)));
+    }
+  }
+
   void _deletePage(NotePage page) {
     final doc = _doc!;
     final index = doc.pages.indexOf(page);
