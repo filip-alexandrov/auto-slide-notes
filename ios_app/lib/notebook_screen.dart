@@ -83,6 +83,13 @@ class _NotebookScreenState extends State<NotebookScreen>
   bool _closing = false;
   int _currentPage = 0;
 
+  // Pinch zoom: 1.0 = pages fit the screen width.
+  final _hScroll = ScrollController();
+  double _zoom = 1;
+  Size _viewport = Size.zero;
+  final _touches = <int, Offset>{};
+  _PinchAnchor? _pinch;
+
   @override
   void initState() {
     super.initState();
@@ -281,6 +288,23 @@ class _NotebookScreenState extends State<NotebookScreen>
       } else {
         _toolBeforeEraser = _settings.tool;
         _settings = _settings.copyWith(tool: DrawTool.eraser);
+      }
+    });
+  }
+
+  void _resetZoom() {
+    setState(() => _zoom = 1);
+    if (_hScroll.hasClients) _hScroll.jumpTo(0);
+    // Keep roughly the same page in view.
+    final index = _currentPage;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scroll.hasClients && _doc!.pages.isNotEmpty) {
+        _scroll.jumpTo(
+          math.min(
+            _itemTop(index, _zoomedWidth()) - _pageGap,
+            _scroll.position.maxScrollExtent,
+          ),
+        );
       }
     });
   }
