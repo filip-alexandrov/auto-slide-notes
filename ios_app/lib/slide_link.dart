@@ -18,4 +18,15 @@ class SlideLink extends ChangeNotifier {
     required this.doc,
     required this.onSlideAdded,
   });
+
+  static const _channel = MethodChannel('ipad_notes/link');
+
+  final DocumentStore store;
+  final NoteDocument doc;
+  final void Function(NotePage page) onSlideAdded;
+
+  LinkState state = LinkState.off;
+
+  /// Name of the Mac connected (or being connected) to.
+  String? peer;
 }
