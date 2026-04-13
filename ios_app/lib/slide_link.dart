@@ -68,4 +68,28 @@ class SlideLink extends ChangeNotifier {
     }
     return null;
   }
+
+  Future<void> _importSlide(Uint8List bytes, int seq) async {
+    final aspect = await _aspectOf(bytes);
+    final pageId = DocumentStore.newPageId();
+    final name = 'slide_$pageId.png';
+    await store.imageFile(name).writeAsBytes(bytes, flush: true);
+    final page = NotePage(
+      id: pageId,
+      aspect: aspect,
+      imageFile: name,
+      slideId: seq,
+    );
+    doc.appendPage(page);
+    onSlideAdded(page);
+  }
+
+  static Future<double> _aspectOf(Uint8List bytes) async {
+    final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+    final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    final aspect = descriptor.height / descriptor.width;
+    descriptor.dispose();
+    buffer.dispose();
+    return aspect;
+  }
 }
