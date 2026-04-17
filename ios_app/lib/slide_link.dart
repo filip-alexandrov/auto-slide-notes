@@ -92,4 +92,20 @@ class SlideLink extends ChangeNotifier {
     buffer.dispose();
     return aspect;
   }
+
+  void _set(LinkState s, String? p) {
+    if (s == state && p == peer) return;
+    state = s;
+    peer = p;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    // Shut down quietly: listeners may already be gone.
+    state = LinkState.off;
+    _channel.setMethodCallHandler(null);
+    _channel.invokeMethod('stop').catchError((_) => null);
+    super.dispose();
+  }
 }
