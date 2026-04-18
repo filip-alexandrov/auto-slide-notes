@@ -46,3 +46,35 @@ final class PencilTap: NSObject, UIPencilInteractionDelegate {
     channel?.invokeMethod("doubleTap", arguments: nil)
   }
 }
+
+/// Receives screenshots from the Mac app over Multipeer Connectivity
+/// (peer-to-peer Wi-Fi / Bluetooth) — no server or shared network needed.
+///
+/// While a note is open, Dart calls `start`: the iPad looks for nearby Macs
+/// and asks to connect (the Mac app approves an iPad once). Each slide
+/// arrives as a resource named `slide-<n>.png` and is passed to Dart.
+///
+/// Channel `ipad_notes/link`:
+///   Dart → native: `start`, `stop`
+///   native → Dart: `status({state: searching|connecting|connected, peer})`,
+///                  `slide({seq: Int, bytes: Uint8List})`
+final class SlideLinkClient: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate {
+  static let shared = SlideLinkClient()
+
+  /// Must match the Mac app (and NSBonjourServices in both Info.plists).
+  private static let serviceType = "notes-slides"
+
+  private var channel: FlutterMethodChannel?
+  private let peerID = MCPeerID(displayName: UIDevice.current.name)
+  private lazy var session: MCSession = {
+    let s = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
+    s.delegate = self
+    return s
+  }()
+  private lazy var browser: MCNearbyServiceBrowser = {
+    let b = MCNearbyServiceBrowser(peer: peerID, serviceType: Self.serviceType)
+    b.delegate = self
+    return b
+  }()
+  private var running = false
+}
