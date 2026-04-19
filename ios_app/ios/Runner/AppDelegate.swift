@@ -77,4 +77,35 @@ final class SlideLinkClient: NSObject, MCSessionDelegate, MCNearbyServiceBrowser
     return b
   }()
   private var running = false
+
+  func attach(messenger: FlutterBinaryMessenger) {
+    let ch = FlutterMethodChannel(name: "ipad_notes/link", binaryMessenger: messenger)
+    ch.setMethodCallHandler { [weak self] call, result in
+      switch call.method {
+      case "start":
+        self?.start()
+        result(nil)
+      case "stop":
+        self?.stop()
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    channel = ch
+  }
+
+  private func start() {
+    guard !running else { return reportStatus() }
+    running = true
+    browser.startBrowsingForPeers()
+    reportStatus()
+  }
+
+  private func stop() {
+    guard running else { return }
+    running = false
+    browser.stopBrowsingForPeers()
+    session.disconnect()
+  }
 }
