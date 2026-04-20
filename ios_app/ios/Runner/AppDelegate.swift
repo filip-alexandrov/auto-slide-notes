@@ -108,4 +108,18 @@ final class SlideLinkClient: NSObject, MCSessionDelegate, MCNearbyServiceBrowser
     browser.stopBrowsingForPeers()
     session.disconnect()
   }
+
+  private func reportStatus() {
+    let peers = session.connectedPeers
+    let state = peers.isEmpty ? (connecting ? "connecting" : "searching") : "connected"
+    let peer = peers.first?.displayName ?? pendingPeer?.displayName
+    DispatchQueue.main.async {
+      self.channel?.invokeMethod("status", arguments: ["state": state, "peer": peer as Any])
+    }
+  }
+
+  private var connecting = false
+  private var pendingPeer: MCPeerID?
+
+  // MARK: MCNearbyServiceBrowserDelegate
 }
