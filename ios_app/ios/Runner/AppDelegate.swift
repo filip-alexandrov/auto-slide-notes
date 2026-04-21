@@ -122,4 +122,18 @@ final class SlideLinkClient: NSObject, MCSessionDelegate, MCNearbyServiceBrowser
   private var pendingPeer: MCPeerID?
 
   // MARK: MCNearbyServiceBrowserDelegate
+
+  func browser(
+    _ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID,
+    withDiscoveryInfo info: [String: String]?
+  ) {
+    guard running, !connecting, !session.connectedPeers.contains(peerID) else { return }
+    pendingPeer = peerID
+    connecting = true
+    reportStatus()
+    // The Mac may need the user to approve this iPad, so allow time.
+    browser.invitePeer(peerID, to: session, withContext: nil, timeout: 60)
+  }
+
+  func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {}
 }
