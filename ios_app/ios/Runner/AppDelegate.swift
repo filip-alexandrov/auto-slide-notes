@@ -136,4 +136,10 @@ final class SlideLinkClient: NSObject, MCSessionDelegate, MCNearbyServiceBrowser
   }
 
   func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {}
+
+  func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
+    NSLog("SlideLink: browsing failed: \(error)")
+  }
+
+  // MARK: MCSessionDelegate
 }
