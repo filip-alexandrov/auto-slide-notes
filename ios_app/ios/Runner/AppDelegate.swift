@@ -142,4 +142,36 @@ final class SlideLinkClient: NSObject, MCSessionDelegate, MCNearbyServiceBrowser
   }
 
   // MARK: MCSessionDelegate
+
+  func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+    if state != .connecting {
+      connecting = false
+      pendingPeer = nil
+    }
+    reportStatus()
+    // If the Mac declined or the link dropped, look again (a new
+    // invitation is sent when the Mac is found).
+    if state == .notConnected, running, session.connectedPeers.isEmpty {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+        guard let self, self.running else { return }
+        self.browser.stopBrowsingForPeers()
+        self.browser.startBrowsingForPeers()
+      }
+    }
+  }
+
+  func session(
+    _ session: MCSession, didFinishReceivingResourceWithName resourceName: String,
+    fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?
+  ) {
+    // The temporary file is deleted after this returns, so read it now.
+    guard error == nil, let url = localURL, let data = try? Data(contentsOf: url) else {
+      return
+    }
+    let seq = Int(resourceName.filter(\.isNumber)) ?? 0
+    DispatchQueue.main.async {
+      self.channel?.invokeMethod(
+        "slide", arguments: ["seq": seq, "bytes": FlutterStandardTypedData(bytes: data)])
+    }
+  }
 }
