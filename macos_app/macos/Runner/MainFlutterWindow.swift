@@ -418,3 +418,24 @@ private final class OverlayView: NSView {
     str.draw(at: point, withAttributes: Self.labelAttributes)
   }
 }
+
+// MARK: - Multipeer slide link
+
+/// Sends screenshots straight to nearby iPads over Multipeer Connectivity
+/// (peer-to-peer Wi-Fi / Bluetooth, the technology behind AirDrop) — no
+/// server or shared network needed.
+///
+/// The Mac advertises itself; iPads with an open note find it and ask to
+/// connect. The first connection from an iPad must be approved in the Mac
+/// app, after which that iPad is trusted. Slides are numbered, sent one at
+/// a time in order, and queued (in memory) while no iPad is connected.
+///
+/// Channel `mac_capture/link`:
+///   Dart → native: `sendSlide(Uint8List png)` → slide number,
+///                  `forgetTrustedPeers()`, `status()`
+///   native → Dart: `status({peers: [String], queued: int})`,
+///                  `approvePeer({name: String})` → bool
+final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDelegate {
+  /// Must match the iPad app (and NSBonjourServices in both Info.plists).
+  static let serviceType = "notes-slides"
+}
