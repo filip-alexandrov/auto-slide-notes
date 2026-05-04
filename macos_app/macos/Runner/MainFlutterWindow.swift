@@ -438,4 +438,30 @@ private final class OverlayView: NSView {
 final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertiserDelegate {
   /// Must match the iPad app (and NSBonjourServices in both Info.plists).
   static let serviceType = "notes-slides"
+
+  private static let trustedKey = "trustedPeers"
+  private static let sequenceKey = "slideSequence"
+
+  private let channel: FlutterMethodChannel
+  private let peerID = MCPeerID(displayName: Host.current().localizedName ?? "Mac")
+  private let session: MCSession
+  private let advertiser: MCNearbyServiceAdvertiser
+  private let defaults = UserDefaults.standard
+
+  private var queue: [(seq: Int, data: Data)] = []
+  private var sending = false
+
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "mac_capture/link", binaryMessenger: messenger)
+    session = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
+    advertiser = MCNearbyServiceAdvertiser(
+      peer: peerID, discoveryInfo: nil, serviceType: Self.serviceType)
+    super.init()
+    session.delegate = self
+    advertiser.delegate = self
+    advertiser.startAdvertisingPeer()
+    channel.setMethodCallHandler { [weak self] call, result in
+      self?.handle(call, result: result)
+    }
+  }
 }
