@@ -464,4 +464,32 @@ final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertise
       self?.handle(call, result: result)
     }
   }
+
+  private var trusted: Set<String> {
+    get { Set(defaults.stringArray(forKey: Self.trustedKey) ?? []) }
+    set { defaults.set(Array(newValue), forKey: Self.trustedKey) }
+  }
+
+  private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case "sendSlide":
+      guard let png = call.arguments as? FlutterStandardTypedData else {
+        return result(FlutterError(code: "bad_args", message: "Expected PNG bytes", details: nil))
+      }
+      let seq = defaults.integer(forKey: Self.sequenceKey) + 1
+      defaults.set(seq, forKey: Self.sequenceKey)
+      queue.append((seq, png.data))
+      result(seq)
+      reportStatus()
+      sendNext()
+    case "forgetTrustedPeers":
+      trusted = []
+      result(nil)
+    case "status":
+      reportStatus()
+      result(nil)
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
 }
