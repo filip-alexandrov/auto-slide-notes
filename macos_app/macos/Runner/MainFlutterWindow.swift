@@ -492,4 +492,46 @@ final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertise
       result(FlutterMethodNotImplemented)
     }
   }
+
+  // MARK: Sending
+
+  /// Sends the oldest queued slide to every connected iPad, then the next.
+  private func sendNext() {
+    guard !sending, let item = queue.first else { return }
+    let peers = session.connectedPeers
+    guard !peers.isEmpty else { return }
+    sending = true
+
+    let url = FileManager.default.temporaryDirectory
+      .appendingPathComponent("slide-\(item.seq)-\(UUID().uuidString).png")
+    do {
+      try item.data.write(to: url)
+    } catch {
+      sending = false
+      queue.removeFirst()
+      return sendNext()
+    }
+
+    let group = DispatchGroup()
+    var delivered = false
+    let lock = NSLock()
+    for peer in peers {
+      group.enter()
+      session.sendResource(at: url, withName: "slide-\(item.seq).png", toPeer: peer) { error in
+        if error == nil {
+          lock.lock(); delivered = true; lock.unlock()
+        }
+        group.leave()
+      }
+    }
+    group.notify(queue: .main) { [weak self] in
+      try? FileManager.default.removeItem(at: url)
+      guard let self else { return }
+      self.sending = false
+      // Keep the slide queued if no iPad received it (e.g. it disconnected).
+      if delivered, self.queue.first?.seq == item.seq { self.queue.removeFirst() }
+      self.reportStatus()
+      if delivered { self.sendNext() }
+    }
+  }
 }
