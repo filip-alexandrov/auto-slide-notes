@@ -534,4 +534,14 @@ final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertise
       if delivered { self.sendNext() }
     }
   }
+
+  private func reportStatus() {
+    let names = session.connectedPeers.map(\.displayName)
+    DispatchQueue.main.async {
+      self.channel.invokeMethod(
+        "status", arguments: ["peers": names, "queued": self.queue.count])
+    }
+  }
+
+  // MARK: MCNearbyServiceAdvertiserDelegate
 }
