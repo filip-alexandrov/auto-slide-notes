@@ -544,4 +544,31 @@ final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertise
   }
 
   // MARK: MCNearbyServiceAdvertiserDelegate
+
+  func advertiser(
+    _ advertiser: MCNearbyServiceAdvertiser,
+    didReceiveInvitationFromPeer peerID: MCPeerID,
+    withContext context: Data?,
+    invitationHandler: @escaping (Bool, MCSession?) -> Void
+  ) {
+    let name = peerID.displayName
+    if trusted.contains(name) {
+      return invitationHandler(true, session)
+    }
+    DispatchQueue.main.async {
+      self.channel.invokeMethod("approvePeer", arguments: ["name": name]) { answer in
+        let ok = (answer as? Bool) ?? false
+        if ok { self.trusted.insert(name) }
+        invitationHandler(ok, ok ? self.session : nil)
+      }
+    }
+  }
+
+  func advertiser(
+    _ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error
+  ) {
+    NSLog("SlideLink: advertising failed: \(error)")
+  }
+
+  // MARK: MCSessionDelegate
 }
