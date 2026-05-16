@@ -571,4 +571,18 @@ final class SlideLinkHost: NSObject, MCSessionDelegate, MCNearbyServiceAdvertise
   }
 
   // MARK: MCSessionDelegate
+
+  func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+    reportStatus()
+    if state == .connected {
+      DispatchQueue.main.async { self.sendNext() }
+    }
+  }
+
+  func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {}
+
+  func session(
+    _ session: MCSession, didReceive stream: InputStream, withName streamName: String,
+    fromPeer peerID: MCPeerID
+  ) {}
 }
