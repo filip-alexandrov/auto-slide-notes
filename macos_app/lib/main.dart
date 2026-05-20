@@ -106,6 +106,31 @@ class _CaptureScreenState extends State<CaptureScreen> {
     super.dispose();
   }
 
+  Future<bool> _approvePeer(String name) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Connect iPad?'),
+        content: Text(
+          '“$name” wants to receive your screenshots. '
+          'Allow it? It will be remembered for next time.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Decline'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Allow'),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
   void _setStatus(String msg, {bool error = false}) {
     if (!mounted) return;
     setState(() {
