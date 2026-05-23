@@ -390,3 +390,55 @@ class _CaptureScreenState extends State<CaptureScreen> {
     );
   }
 }
+
+/// Shows which iPads are connected over the peer-to-peer link.
+class _LinkCard extends StatelessWidget {
+  const _LinkCard({required this.link});
+
+  final SlideLink link;
+
+  @override
+  Widget build(BuildContext context) {
+    final connected = link.peers.isNotEmpty;
+    final theme = Theme.of(context);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(
+          connected ? Icons.tablet_mac : Icons.wifi_tethering,
+          color: connected ? Colors.green[700] : theme.colorScheme.outline,
+        ),
+        title: Text(
+          connected
+              ? 'Connected to ${link.peers.join(', ')}'
+              : 'Waiting for iPad…',
+        ),
+        subtitle: Text(
+          connected
+              ? 'Screenshots go straight to the open note.'
+              : 'Open a note on the iPad nearby (Wi-Fi or Bluetooth on).'
+                    '${link.queued > 0 ? ' ${link.queued} slide(s) queued.' : ''}',
+        ),
+        trailing: PopupMenuButton<String>(
+          tooltip: 'Connection options',
+          onSelected: (_) async {
+            await link.forgetTrustedPeers();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Forgotten. iPads must be approved again.'),
+                ),
+              );
+            }
+          },
+          itemBuilder: (_) => const [
+            PopupMenuItem(
+              value: 'forget',
+              child: Text('Forget approved iPads'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
