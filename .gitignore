@@ -38,10 +38,3 @@ Pods/
 
 # Local device backups of notes
 ipad_backup_*/
-
-# Backend
-__pycache__/
-.pytest_cache/
-backend/.venv/
-backend/data/
-backend/server.log
