@@ -39,4 +39,13 @@ class SlideLink extends ChangeNotifier {
   /// connects. Returns the slide's number.
   Future<int> send(Uint8List png) async =>
       (await _channel.invokeMethod<int>('sendSlide', png))!;
+
+  Future<void> forgetTrustedPeers() =>
+      _channel.invokeMethod('forgetTrustedPeers');
+
+  @override
+  void dispose() {
+    _channel.setMethodCallHandler(null);
+    super.dispose();
+  }
 }
