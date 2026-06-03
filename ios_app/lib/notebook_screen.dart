@@ -347,6 +347,29 @@ class _NotebookScreenState extends State<NotebookScreen>
     });
   }
 
+  // ---------------------------------------------------------------- events
+
+  void _onSlideAdded(NotePage page) {
+    if (!mounted) return;
+    // The page is appended at the end; the scroll offset is left untouched.
+    setState(() {});
+    final index = _doc!.pages.indexOf(page);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('New slide added as page ${index + 1}'),
+        behavior: SnackBarBehavior.floating,
+        width: 360,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Show',
+          onPressed: () => _jumpToPage(index),
+        ),
+      ),
+    );
+  }
+
   void _recordEdit(_Edit edit) {
     _undo.add(edit);
     _redo.clear();
