@@ -993,6 +993,34 @@ class _DeleteButton extends StatelessWidget {
   }
 }
 
+class _StatusDot extends StatelessWidget {
+  const _StatusDot({required this.link});
+
+  final SlideLink link;
+
+  @override
+  Widget build(BuildContext context) {
+    final mac = link.peer ?? 'Mac';
+    final (color, text) = switch (link.state) {
+      LinkState.connected => (Colors.green, 'Connected to $mac'),
+      LinkState.connecting => (
+        Colors.orange,
+        'Connecting to $mac… (approve this iPad in the Mac app)',
+      ),
+      LinkState.searching ||
+      LinkState.off => (Colors.grey, 'Looking for the Mac app nearby…'),
+    };
+    return Tooltip(
+      message: text,
+      child: Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+    );
+  }
+}
+
 class _ColorSwatch extends StatelessWidget {
   const _ColorSwatch({
     required this.color,
