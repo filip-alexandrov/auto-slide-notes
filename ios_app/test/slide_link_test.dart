@@ -46,4 +46,53 @@ void main() {
           return null;
         });
   });
+
+  tearDown(() => tmp.delete(recursive: true));
+
+  Future<void> fromNative(String method, Object args) async {
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          'ipad_notes/link',
+          const StandardMethodCodec().encodeMethodCall(
+            MethodCall(method, args),
+          ),
+          (_) {},
+        );
+  }
+
+  testWidgets('slides pushed by the Mac become pages in order', (tester) async {
+    await tester.runAsync(() async {
+      final library = await NoteLibrary.open();
+      final id = await library.create('Lecture');
+      final store = library.storeFor(id);
+      final doc = await store.load();
+      final added = <NotePage>[];
+      final link = SlideLink(store: store, doc: doc, onSlideAdded: added.add);
+
+      await link.start();
+      expect(native, ['start']);
+      expect(link.state, LinkState.searching);
+
+      await fromNative('status', {'state': 'connected', 'peer': 'Studio Mac'});
+      expect(link.state, LinkState.connected);
+      expect(link.peer, 'Studio Mac');
+
+      await fromNative('slide', {'seq': 41, 'bytes': _png});
+      await fromNative('slide', {'seq': 42, 'bytes': _png});
+      // Imports are chained; wait for both to land.
+      for (var i = 0; i < 50 && added.length < 2; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+
+      expect(added.map((p) => p.slideId), [41, 42]);
+      expect(doc.pages.last.slideId, 42);
+      expect(added.first.aspect, closeTo(0.5, 1e-9));
+      expect(store.imageFile(added.first.imageFile!).existsSync(), isTrue);
+
+      await link.stop();
+      expect(native.last, 'stop');
+      expect(link.state, LinkState.off);
+      link.dispose();
+    });
+  });
 }
