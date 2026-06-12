@@ -11,6 +11,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 import 'page_canvas.dart' show paintStroke;
 
+/// What the library shows for a note without opening it.
+class NoteSummary {
+  NoteSummary({
+    required this.id,
+    required this.title,
+    required this.created,
+    required this.modified,
+    required this.pageCount,
+    this.thumbnail,
+  });
+
+  final String id;
+  final String title;
+  final DateTime created;
+  final DateTime modified;
+  final int pageCount;
+
+  /// PNG of the first slide (or page), null for empty notes.
+  final Uint8List? thumbnail;
+}
+
 /// Persists one note as `document.json` plus slide images in its folder.
 class DocumentStore {
   DocumentStore._(this.root);
