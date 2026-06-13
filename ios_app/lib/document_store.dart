@@ -32,6 +32,31 @@ class NoteSummary {
   final Uint8List? thumbnail;
 }
 
+/// All notes, stored locally as `Documents/notes/<id>/` folders, each with
+/// `document.json`, `meta.json`, `thumbnail.png` and an `images/` directory.
+///
+/// Also keeps the server slide cursor: it is global (not per note) so that
+/// a slide is imported exactly once, into whichever note is open.
+class NoteLibrary {
+  NoteLibrary._(this.root, this._prefs);
+
+  final Directory root;
+  final SharedPreferences _prefs;
+
+  static Future<NoteLibrary> open() async {
+    final prefs = await SharedPreferences.getInstance();
+    final docs = await getApplicationDocumentsDirectory();
+    final lib = NoteLibrary._(Directory('${docs.path}/notes'), prefs);
+    await lib._migrateSingleNotebook(Directory('${docs.path}/notebook'));
+    await lib.root.create(recursive: true);
+    return lib;
+  }
+
+  Directory _dir(String id) => Directory('${root.path}/$id');
+
+  DocumentStore storeFor(String id) => DocumentStore._(_dir(id));
+}
+
 /// Persists one note as `document.json` plus slide images in its folder.
 class DocumentStore {
   DocumentStore._(this.root);
