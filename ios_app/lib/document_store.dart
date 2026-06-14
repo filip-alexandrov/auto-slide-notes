@@ -11,6 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 import 'page_canvas.dart' show paintStroke;
 
+const _lastSlideIdKey = 'lastSlideId';
+const _lastOpenedKey = 'lastOpenedNote';
+
 /// What the library shows for a note without opening it.
 class NoteSummary {
   NoteSummary({
@@ -51,6 +54,20 @@ class NoteLibrary {
     await lib.root.create(recursive: true);
     return lib;
   }
+
+  /// Highest server slide id already imported into any note.
+  int get lastSlideId => _prefs.getInt(_lastSlideIdKey) ?? 0;
+  set lastSlideId(int id) => _prefs.setInt(_lastSlideIdKey, id);
+
+  /// The note that was open last, reopened on launch.
+  String? get lastOpenedId {
+    final id = _prefs.getString(_lastOpenedKey);
+    return id != null && _dir(id).existsSync() ? id : null;
+  }
+
+  set lastOpenedId(String? id) => id == null
+      ? _prefs.remove(_lastOpenedKey)
+      : _prefs.setString(_lastOpenedKey, id);
 
   Directory _dir(String id) => Directory('${root.path}/$id');
 
