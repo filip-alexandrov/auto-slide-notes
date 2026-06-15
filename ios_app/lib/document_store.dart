@@ -72,6 +72,26 @@ class NoteLibrary {
   Directory _dir(String id) => Directory('${root.path}/$id');
 
   DocumentStore storeFor(String id) => DocumentStore._(_dir(id));
+
+  /// Earlier versions kept a single notebook in `Documents/notebook`;
+  /// it becomes the first note of the library.
+  Future<void> _migrateSingleNotebook(Directory old) async {
+    final oldDoc = File('${old.path}/document.json');
+    if (await root.exists() || !await oldDoc.exists()) return;
+    try {
+      final json = jsonDecode(await oldDoc.readAsString());
+      final cursor = (json as Map<String, dynamic>)['lastSlideId'] as int?;
+      if (cursor != null && !_prefs.containsKey(_lastSlideIdKey)) {
+        lastSlideId = cursor;
+      }
+    } catch (_) {
+      // Unreadable: DocumentStore.load sets it aside as before.
+    }
+    await root.create(recursive: true);
+    final id = newId();
+    await old.rename(_dir(id).path);
+    lastOpenedId = id;
+  }
 }
 
 /// Persists one note as `document.json` plus slide images in its folder.
