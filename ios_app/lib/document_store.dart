@@ -92,6 +92,25 @@ class NoteLibrary {
     await old.rename(_dir(id).path);
     lastOpenedId = id;
   }
+
+  Future<List<NoteSummary>> list() async {
+    final notes = <NoteSummary>[];
+    if (!await root.exists()) return notes;
+    await for (final entity in root.list()) {
+      if (entity is! Directory) continue;
+      final summary = await DocumentStore._(entity).summary();
+      if (summary != null) notes.add(summary);
+    }
+    return notes;
+  }
+
+  Future<String> create(String title) async {
+    final id = newId();
+    final store = storeFor(id);
+    await store.imagesDir.create(recursive: true);
+    await store.save(NoteDocument(title: title));
+    return id;
+  }
 }
 
 /// Persists one note as `document.json` plus slide images in its folder.
