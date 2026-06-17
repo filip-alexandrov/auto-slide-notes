@@ -111,6 +111,13 @@ class NoteLibrary {
     await store.save(NoteDocument(title: title));
     return id;
   }
+
+  Future<void> rename(String id, String title) async {
+    final store = storeFor(id);
+    final doc = await store.load();
+    doc.title = title;
+    await store.save(doc, touch: false);
+  }
 }
 
 /// Persists one note as `document.json` plus slide images in its folder.
