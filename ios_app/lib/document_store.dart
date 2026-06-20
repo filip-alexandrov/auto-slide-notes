@@ -118,7 +118,44 @@ class NoteLibrary {
     doc.title = title;
     await store.save(doc, touch: false);
   }
+
+  Future<String> duplicate(String id, String title) async {
+    final copy = newId();
+    await _copyDir(_dir(id), _dir(copy));
+    final store = storeFor(copy);
+    final doc = await store.load();
+    doc
+      ..title = title
+      ..created = DateTime.now();
+    await store.save(doc);
+    return copy;
+  }
+
+  Future<void> delete(String id) async {
+    if (_prefs.getString(_lastOpenedKey) == id) lastOpenedId = null;
+    final dir = _dir(id);
+    if (await dir.exists()) await dir.delete(recursive: true);
+  }
+
+  static Future<void> _copyDir(Directory from, Directory to) async {
+    await to.create(recursive: true);
+    await for (final e in from.list()) {
+      final name = _basename(e);
+      if (e is Directory) {
+        await _copyDir(e, Directory('${to.path}/$name'));
+      } else if (e is File) {
+        await e.copy('${to.path}/$name');
+      }
+    }
+  }
+
+  static int _counter = 0;
+  static String newId() =>
+      '${DateTime.now().microsecondsSinceEpoch}_${_counter++}';
 }
+
+String _basename(FileSystemEntity e) =>
+    e.uri.pathSegments.lastWhere((s) => s.isNotEmpty);
 
 /// Persists one note as `document.json` plus slide images in its folder.
 class DocumentStore {
