@@ -214,6 +214,42 @@ class DocumentStore {
     await tmp.writeAsString(contents, flush: true);
     await tmp.rename(file.path);
   }
+
+  /// Reads the metadata the library needs; null if this isn't a note.
+  Future<NoteSummary?> summary() async {
+    Map<String, dynamic>? meta;
+    try {
+      if (await _metaFile.exists()) {
+        meta =
+            jsonDecode(await _metaFile.readAsString()) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    if (meta == null) {
+      // Notes written before meta.json existed.
+      if (!await _docFile.exists()) return null;
+      final doc = await load();
+      final stat = await _docFile.stat();
+      meta = {
+        'title': doc.title,
+        'created': doc.created.toIso8601String(),
+        'modified': stat.modified.toIso8601String(),
+        'pageCount': doc.pages.length,
+      };
+    }
+    final thumb = await _thumbFile.exists()
+        ? await _thumbFile.readAsBytes()
+        : null;
+    final modified =
+        DateTime.tryParse(meta['modified'] as String? ?? '') ?? DateTime.now();
+    return NoteSummary(
+      id: id,
+      title: meta['title'] as String? ?? 'Notes',
+      created: DateTime.tryParse(meta['created'] as String? ?? '') ?? modified,
+      modified: modified,
+      pageCount: meta['pageCount'] as int? ?? 0,
+      thumbnail: thumb,
+    );
+  }
 }
 
 /// Coalesces rapid document changes into a single write.
