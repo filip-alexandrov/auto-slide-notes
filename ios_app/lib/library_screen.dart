@@ -68,4 +68,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
     return list;
   }
+
+  Future<void> _open(String id) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => NotebookScreen(library: _library!, noteId: id),
+      ),
+    );
+    await _reload();
+  }
+
+  Future<void> _createNote() async {
+    final id = await _library!.create('Note ${_formatDate(DateTime.now())}');
+    await _open(id);
+  }
 }
