@@ -82,4 +82,100 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final id = await _library!.create('Note ${_formatDate(DateTime.now())}');
     await _open(id);
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final library = _library;
+    final notes = _visible;
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF2F2F7),
+        surfaceTintColor: Colors.transparent,
+        toolbarHeight: 72,
+        titleSpacing: 28,
+        title: const Text(
+          'All Notes',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
+        ),
+        actions: [
+          SizedBox(
+            width: 280,
+            height: 40,
+            child: TextField(
+              controller: _search,
+              onChanged: (v) => setState(() => _query = v),
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        icon: const Icon(Icons.close, size: 18),
+                        onPressed: () => setState(() {
+                          _search.clear();
+                          _query = '';
+                        }),
+                      ),
+                filled: true,
+                fillColor: const Color(0x14000000),
+                contentPadding: EdgeInsets.zero,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          PopupMenuButton<_SortOrder>(
+            tooltip: 'Sort by',
+            icon: const Icon(Icons.sort),
+            initialValue: _sort,
+            onSelected: (v) => setState(() => _sort = v),
+            itemBuilder: (_) => [
+              for (final o in _SortOrder.values)
+                CheckedPopupMenuItem(
+                  value: o,
+                  checked: o == _sort,
+                  child: Text(o.label),
+                ),
+            ],
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            onPressed: library == null ? null : _createNote,
+            icon: const Icon(Icons.add),
+            label: const Text('New Note'),
+          ),
+          const SizedBox(width: 24),
+        ],
+      ),
+      body: library == null
+          ? const Center(child: CircularProgressIndicator())
+          : notes.isEmpty
+          ? _EmptyState(searching: _query.isNotEmpty, onCreate: _createNote)
+          : GridView.builder(
+              padding: const EdgeInsets.fromLTRB(28, 12, 28, 40),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 210,
+                mainAxisSpacing: 28,
+                crossAxisSpacing: 28,
+                // Preview area plus room for title and date.
+                childAspectRatio: 0.8,
+              ),
+              itemCount: notes.length,
+              itemBuilder: (context, i) {
+                final note = notes[i];
+                return _NoteCard(
+                  key: ValueKey(note.id),
+                  note: note,
+                  onTap: () => _open(note.id),
+                  onMenu: (pos) => _showNoteMenu(note, pos),
+                );
+              },
+            ),
+    );
+  }
 }
