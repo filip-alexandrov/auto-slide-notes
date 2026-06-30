@@ -179,3 +179,118 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 }
+
+class _NoteCard extends StatelessWidget {
+  const _NoteCard({
+    super.key,
+    required this.note,
+    required this.onTap,
+    required this.onMenu,
+  });
+
+  final NoteSummary note;
+  final VoidCallback onTap;
+  final void Function(Offset globalPosition) onMenu;
+
+  @override
+  Widget build(BuildContext context) {
+    final thumb = note.thumbnail;
+    final pages = note.pageCount == 1 ? '1 page' : '${note.pageCount} pages';
+    return GestureDetector(
+      onTap: onTap,
+      onLongPressStart: (d) => onMenu(d.globalPosition),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // The first slide at its own shape, bottom-aligned so titles
+          // line up across a row.
+          Expanded(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: AspectRatio(
+                aspectRatio: note.thumbnailAspect ?? 3 / 4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0x1A000000)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x1F000000),
+                        blurRadius: 10,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: thumb != null
+                        ? Image.memory(
+                            thumb,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                          )
+                        : Center(
+                            child: Icon(
+                              note.pageCount == 0
+                                  ? Icons.note_alt_outlined
+                                  : Icons.description_outlined,
+                              size: 40,
+                              color: Colors.black26,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  note.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              // Title dropdown, like Notability's note options.
+              Builder(
+                builder: (ctx) => InkResponse(
+                  radius: 16,
+                  onTap: () {
+                    final box = ctx.findRenderObject() as RenderBox;
+                    onMenu(box.localToGlobal(box.size.bottomLeft(Offset.zero)));
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.expand_more,
+                      size: 18,
+                      semanticLabel: 'Note options',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${_formatRelative(note.modified)} · $pages',
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+}
