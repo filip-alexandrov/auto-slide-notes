@@ -294,3 +294,48 @@ class _NoteCard extends StatelessWidget {
     );
   }
 }
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.searching, required this.onCreate});
+
+  final bool searching;
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    if (searching) {
+      return const Center(
+        child: Text(
+          'No notes match your search.',
+          style: TextStyle(color: Colors.black45, fontSize: 16),
+        ),
+      );
+    }
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.note_alt_outlined, size: 64, color: Colors.black26),
+          const SizedBox(height: 12),
+          const Text(
+            'No notes yet',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Create a note, then take screenshots on the Mac\n'
+            'to add them as pages.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54),
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: onCreate,
+            icon: const Icon(Icons.add),
+            label: const Text('New Note'),
+          ),
+        ],
+      ),
+    );
+  }
+}
