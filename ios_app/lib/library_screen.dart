@@ -3,6 +3,24 @@ import 'package:flutter/material.dart';
 import 'document_store.dart';
 import 'notebook_screen.dart';
 
+const _months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+String _formatDate(DateTime d) => '${_months[d.month - 1]} ${d.day}, ${d.year}';
+
+String _formatRelative(DateTime d) {
+  final now = DateTime.now();
+  final day = DateTime(d.year, d.month, d.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final time =
+      '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  if (day == today) return 'Today $time';
+  if (day == today.subtract(const Duration(days: 1))) return 'Yesterday $time';
+  return _formatDate(d);
+}
+
 /// Home screen: every locally stored note as a card with a preview of its
 /// first page, Notability style. Tapping a card opens the note.
 class LibraryScreen extends StatefulWidget {
