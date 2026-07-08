@@ -21,6 +21,45 @@ String _formatRelative(DateTime d) {
   return _formatDate(d);
 }
 
+/// Asks for a note title; returns null when cancelled or left empty.
+Future<String?> showRenameDialog(
+  BuildContext context,
+  String current, {
+  String title = 'Rename note',
+}) async {
+  final controller = TextEditingController(text: current)
+    ..selection = TextSelection(baseOffset: 0, extentOffset: current.length);
+  final result = await showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: SizedBox(
+        width: 380,
+        child: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(labelText: 'Title'),
+          onSubmitted: (v) => Navigator.pop(ctx, v),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, controller.text),
+          child: const Text('Save'),
+        ),
+      ],
+    ),
+  );
+  controller.dispose();
+  final trimmed = result?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
+}
+
 /// Home screen: every locally stored note as a card with a preview of its
 /// first page, Notability style. Tapping a card opens the note.
 class LibraryScreen extends StatefulWidget {
@@ -99,6 +138,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Future<void> _createNote() async {
     final id = await _library!.create('Note ${_formatDate(DateTime.now())}');
     await _open(id);
+  }
+
+  Future<void> _rename(NoteSummary note) async {
+    final title = await showRenameDialog(context, note.title);
+    if (title == null || title == note.title) return;
+    await _library!.rename(note.id, title);
+    await _reload();
   }
 
   @override
