@@ -147,6 +147,40 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await _reload();
   }
 
+  Future<void> _duplicate(NoteSummary note) async {
+    await _library!.duplicate(note.id, '${note.title} copy');
+    await _reload();
+  }
+
+  Future<void> _delete(NoteSummary note) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Delete “${note.title}”?'),
+        content: const Text(
+          'All pages and annotations of this note will be deleted. '
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await _library!.delete(note.id);
+    await _reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     final library = _library;
