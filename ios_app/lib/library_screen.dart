@@ -181,6 +181,49 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await _reload();
   }
 
+  Future<void> _showNoteMenu(NoteSummary note, Offset position) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final action = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: const [
+        PopupMenuItem(
+          value: 'rename',
+          child: ListTile(
+            leading: Icon(Icons.edit_outlined),
+            title: Text('Rename'),
+          ),
+        ),
+        PopupMenuItem(
+          value: 'duplicate',
+          child: ListTile(
+            leading: Icon(Icons.copy_outlined),
+            title: Text('Duplicate'),
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'delete',
+          child: ListTile(
+            leading: Icon(Icons.delete_outline, color: Colors.red),
+            title: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ),
+      ],
+    );
+    switch (action) {
+      case 'rename':
+        await _rename(note);
+      case 'duplicate':
+        await _duplicate(note);
+      case 'delete':
+        await _delete(note);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final library = _library;
