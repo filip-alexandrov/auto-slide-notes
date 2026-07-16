@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import 'document_store.dart';
 import 'notebook_screen.dart';
 
+enum _SortOrder {
+  modified('Date modified'),
+  created('Date created'),
+  title('Title');
+
+  const _SortOrder(this.label);
+  final String label;
+}
+
 const _months = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
