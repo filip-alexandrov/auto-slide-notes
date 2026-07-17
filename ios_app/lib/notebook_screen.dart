@@ -426,6 +426,16 @@ class _NotebookScreenState extends State<NotebookScreen>
     }
   }
 
+  /// Saves (with a fresh library preview) and returns to the library.
+  Future<void> _close() async {
+    if (_closing) return;
+    setState(() => _closing = true);
+    _link?.stop();
+    await _saver?.flush(thumbnail: true);
+    widget.library.lastOpenedId = null;
+    if (mounted) Navigator.of(context).pop();
+  }
+
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
