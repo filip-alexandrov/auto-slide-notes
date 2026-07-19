@@ -436,6 +436,14 @@ class _NotebookScreenState extends State<NotebookScreen>
     if (mounted) Navigator.of(context).pop();
   }
 
+  Future<void> _rename() async {
+    final doc = _doc!;
+    final title = await showRenameDialog(context, doc.title);
+    if (title == null || title == doc.title) return;
+    setState(() => doc.title = title);
+    doc.markDirty();
+  }
+
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
