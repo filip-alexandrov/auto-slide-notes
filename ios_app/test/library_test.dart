@@ -60,4 +60,44 @@ void main() {
       expect(library.lastOpenedId, notes.single.id);
     },
   );
+
+  test('create, rename, duplicate, delete', () async {
+    final library = await NoteLibrary.open();
+    final id = await library.create('First');
+    await library.rename(id, 'Renamed');
+    final copy = await library.duplicate(id, 'Renamed copy');
+
+    var titles = (await library.list()).map((n) => n.title).toSet();
+    expect(titles, {'Renamed', 'Renamed copy'});
+
+    await library.delete(id);
+    final notes = await library.list();
+    expect(notes.single.id, copy);
+  });
+
+  test('thumbnail renders the first page with ink', () async {
+    final library = await NoteLibrary.open();
+    final id = await library.create('Ink');
+    final store = library.storeFor(id);
+    final doc = await store.load();
+    doc.appendPage(
+      NotePage(id: 'p', aspect: 1)..addStroke(
+        Stroke(
+          tool: StrokeTool.pen,
+          color: 0xFF000000,
+          width: 20,
+          points: [const Offset(100, 100), const Offset(900, 900)],
+        ),
+      ),
+    );
+    final saver = AutoSaver(store, doc);
+    await saver.flush(thumbnail: true);
+    saver.dispose();
+
+    final note = (await library.list()).single;
+    expect(note.pageCount, 1);
+    expect(note.thumbnail, isNotNull);
+    // PNG signature.
+    expect(note.thumbnail!.sublist(1, 4), utf8.encode('PNG'));
+  });
 }
