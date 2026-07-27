@@ -14,6 +14,13 @@ import 'page_canvas.dart' show paintStroke;
 const _lastSlideIdKey = 'lastSlideId';
 const _lastOpenedKey = 'lastOpenedNote';
 
+/// Width of the stored preview image in pixels.
+const double _thumbWidth = 360;
+
+/// Previews are cropped below this height / width so very tall pages
+/// don't turn into thin strips in the library.
+const double _thumbMaxAspect = 1.5;
+
 /// What the library shows for a note without opening it.
 class NoteSummary {
   NoteSummary({
@@ -250,6 +257,82 @@ class DocumentStore {
       thumbnail: thumb,
     );
   }
+
+  /// Renders the first page into `thumbnail.png`: just the slide (with the
+  /// ink on it) when the page has one, otherwise the whole blank page.
+  Future<void> saveThumbnail(NoteDocument doc) async {
+    if (doc.pages.isEmpty) {
+      if (await _thumbFile.exists()) await _thumbFile.delete();
+      return;
+    }
+    final page = doc.pages.first;
+    final rect = page.imageRect;
+    final area = page.imageFile != null && rect != null
+        ? rect
+        : Offset.zero & Size(page.width, page.height);
+    final scale = _thumbWidth / area.width;
+    final height = (_thumbWidth * area.height / area.width).clamp(
+      1.0,
+      _thumbWidth * _thumbMaxAspect,
+    );
+
+    ui.Image? slide;
+    if (page.imageFile != null && rect != null) {
+      final file = imageFile(page.imageFile!);
+      if (await file.exists()) {
+        final codec = await ui.instantiateImageCodec(
+          await file.readAsBytes(),
+          targetWidth: (rect.width * scale).round().clamp(1, 2048),
+        );
+        slide = (await codec.getNextFrame()).image;
+        codec.dispose();
+      }
+    }
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final bounds = Rect.fromLTWH(0, 0, _thumbWidth, height);
+    canvas
+      ..clipRect(bounds)
+      ..drawRect(bounds, Paint()..color = const Color(0xFFFFFFFF))
+      ..translate(-area.left * scale, -area.top * scale);
+    if (slide != null) {
+      canvas.drawImageRect(
+        slide,
+        Offset.zero & Size(slide.width.toDouble(), slide.height.toDouble()),
+        Rect.fromLTWH(
+          rect!.left * scale,
+          rect.top * scale,
+          rect.width * scale,
+          rect.height * scale,
+        ),
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+      slide.dispose();
+    }
+    canvas.scale(scale);
+    // Same order as on screen: highlighter under pen.
+    for (final tool in [StrokeTool.highlighter, StrokeTool.pen]) {
+      for (final s in page.strokes) {
+        if (s.tool == tool) paintStroke(canvas, s);
+      }
+    }
+
+    final image = await recorder.endRecording().toImage(
+      _thumbWidth.round(),
+      height.round(),
+    );
+    final png = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+    if (png == null) return;
+    final tmp = File('${_thumbFile.path}.tmp');
+    await tmp.writeAsBytes(png.buffer.asUint8List(), flush: true);
+    await tmp.rename(_thumbFile.path);
+  }
+
+  static int _counter = 0;
+  static String newPageId() =>
+      '${DateTime.now().microsecondsSinceEpoch}_${_counter++}';
 }
 
 /// Coalesces rapid document changes into a single write.
