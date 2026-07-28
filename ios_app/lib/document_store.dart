@@ -40,6 +40,15 @@ class NoteSummary {
 
   /// PNG of the first slide (or page), null for empty notes.
   final Uint8List? thumbnail;
+
+  /// Width / height of [thumbnail], read from the PNG header.
+  double? get thumbnailAspect {
+    final t = thumbnail;
+    if (t == null || t.length < 24) return null;
+    final header = ByteData.sublistView(t);
+    final w = header.getUint32(16), h = header.getUint32(20);
+    return w > 0 && h > 0 ? w / h : null;
+  }
 }
 
 /// All notes, stored locally as `Documents/notes/<id>/` folders, each with
@@ -348,6 +357,9 @@ class AutoSaver {
   /// Saves run strictly one after another on this chain. It never holds an
   /// error, so one failed save can't block the ones after it.
   Future<void> _chain = Future.value();
+
+  /// Whether the library preview may be out of date.
+  bool _thumbStale = true;
 
   void _schedule() {
     _thumbStale = true;
