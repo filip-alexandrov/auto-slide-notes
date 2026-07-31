@@ -100,4 +100,37 @@ void main() {
     // PNG signature.
     expect(note.thumbnail!.sublist(1, 4), utf8.encode('PNG'));
   });
+
+  test('preview shows only the first slide, at its own shape', () async {
+    final library = await NoteLibrary.open();
+    final id = await library.create('Slides');
+    final store = library.storeFor(id);
+    final doc = await store.load();
+
+    // A 16:9 slide image.
+    final recorder = ui.PictureRecorder();
+    Canvas(recorder).drawRect(
+      const Rect.fromLTWH(0, 0, 160, 90),
+      Paint()..color = const Color(0xFF1E5EFF),
+    );
+    final img = await recorder.endRecording().toImage(160, 90);
+    final png = await img.toByteData(format: ui.ImageByteFormat.png);
+    await store.imageFile('s.png').writeAsBytes(png!.buffer.asUint8List());
+
+    // White space added below the slide must not show up in the preview.
+    final page = NotePage(id: 'p', aspect: 90 / 160, imageFile: 's.png')
+      ..extend(PageSide.bottom, 800);
+    doc.appendPage(page);
+    await store.saveThumbnail(doc);
+    var note = (await library.list()).single;
+    expect(note.thumbnailAspect, closeTo(16 / 9, 0.02));
+
+    // A blank page is shown whole.
+    doc.pages
+      ..clear()
+      ..add(NotePage(id: 'b', aspect: 1));
+    await store.saveThumbnail(doc);
+    note = (await library.list()).single;
+    expect(note.thumbnailAspect, closeTo(1, 0.01));
+  });
 }
