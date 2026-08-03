@@ -133,4 +133,46 @@ void main() {
     note = (await library.list()).single;
     expect(note.thumbnailAspect, closeTo(1, 0.01));
   });
+
+  testWidgets('library lists notes, opens one and returns', (tester) async {
+    tester.view.physicalSize = const Size(2048, 1536);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    await tester.runAsync(() async {
+      final library = await NoteLibrary.open();
+      await library.create('Biology');
+      await library.create('History');
+      await tester.pumpWidget(const MaterialApp(home: LibraryScreen()));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+
+    expect(find.text('All Notes'), findsOneWidget);
+    expect(find.text('Biology'), findsOneWidget);
+    expect(find.text('History'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'bio');
+    await tester.pump();
+    expect(find.text('History'), findsNothing);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Biology'));
+      await tester.pump();
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookScreen), findsOneWidget);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Notes'));
+      await tester.pump();
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pumpAndSettle();
+    expect(find.byType(NotebookScreen), findsNothing);
+    expect(find.text('Biology'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+  });
 }
