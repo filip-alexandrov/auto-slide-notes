@@ -118,6 +118,57 @@ class NotePage extends ChangeNotifier {
   /// height / width
   double get aspect => height / width;
 
+  /// Grows the page by [amount] units on [side] (negative shrinks, used by
+  /// undo). Content is shifted so it stays where it was relative to the
+  /// opposite side.
+  void extend(PageSide side, double amount) {
+    var shift = Offset.zero;
+    switch (side) {
+      case PageSide.left:
+        width += amount;
+        shift = Offset(amount, 0);
+      case PageSide.right:
+        width += amount;
+      case PageSide.top:
+        height += amount;
+        shift = Offset(0, amount);
+      case PageSide.bottom:
+        height += amount;
+    }
+    if (shift != Offset.zero) {
+      imageRect = imageRect?.shift(shift);
+      for (final s in strokes) {
+        for (var i = 0; i < s.points.length; i++) {
+          s.points[i] += shift;
+        }
+      }
+    }
+    notifyListeners();
+  }
+
+  /// Smallest size a blank page can be shrunk to, in page units.
+  static const double minSize = 200;
+
+  /// How much white space can be removed on [side] without cutting into
+  /// the slide image (or, for blank pages, below [minSize]).
+  double removableOn(PageSide side) {
+    final r = imageRect;
+    if (r == null) {
+      final size = (side == PageSide.left || side == PageSide.right)
+          ? width
+          : height;
+      return math.max(0, size - minSize);
+    }
+    final margin = switch (side) {
+      PageSide.left => r.left,
+      PageSide.right => width - r.right,
+      PageSide.top => r.top,
+      PageSide.bottom => height - r.bottom,
+    };
+    // Guard against float noise from repeated extend/shrink.
+    return margin < 0.01 ? 0 : margin;
+  }
+
   void addStroke(Stroke s) {
     strokes.add(s);
     notifyListeners();
