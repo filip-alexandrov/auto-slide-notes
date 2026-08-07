@@ -23,6 +23,10 @@ const double _pageGap = 12;
 /// Space around each page that holds its "extend" buttons.
 const double _band = 34;
 
+/// How much one press of a +/− button grows or shrinks the page on that
+/// side, in page units (a fresh page is 1000 units wide).
+const double _resizeStep = 100;
+
 /// Apple Pencil double-tap events from ios/Runner/AppDelegate.swift.
 const _pencilChannel = MethodChannel('ipad_notes/pencil');
 
@@ -391,6 +395,25 @@ class _NotebookScreenState extends State<NotebookScreen>
     _undo.add(e);
     _doc?.markDirty();
     setState(() {});
+  }
+
+  void _resizePage(NotePage page, PageSide side, {required bool grow}) {
+    // Shrinking only removes white space, never part of the slide.
+    final amount = grow
+        ? _resizeStep
+        : -math.min(_resizeStep, page.removableOn(side));
+    if (amount == 0) return;
+    final w = _zoomedWidth();
+    final heightBefore = w * page.aspect;
+    _recordEdit(_Edit.extend(page, side, amount)..apply());
+
+    // The page grows/shrinks downward from its top. For the bottom edge,
+    // scroll by the same amount so that edge (and its buttons) stays put
+    // under the finger, mirroring how the top edge stays put for top resizes.
+    if (side == PageSide.bottom && _scroll.hasClients) {
+      final delta = w * page.aspect - heightBefore;
+      _scroll.jumpTo(math.max(0, _scroll.offset + delta));
+    }
   }
 
   void _addBlankPage() {
@@ -962,6 +985,9 @@ class _Edit {
         () => page.removeStrokes(strokes),
         () => page.insertStrokes(strokes),
       );
+
+  _Edit.extend(NotePage page, PageSide side, double amount)
+    : this._(() => page.extend(side, amount), () => page.extend(side, -amount));
 
   final VoidCallback apply;
   final VoidCallback revert;
