@@ -994,6 +994,27 @@ class _Edit {
   final NotePage? deletedPage;
 }
 
+const _controlBorder = Color(0x1F000000);
+const _controlShadow = [
+  BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
+];
+
+/// A "+" / "−" pill next to a page edge: adds or removes white space on
+/// that side. Horizontal on the top/bottom edges, vertical on the sides.
+class _ResizeButtons extends StatelessWidget {
+  const _ResizeButtons({
+    required this.side,
+    required this.onGrow,
+    required this.onShrink,
+  });
+
+  final PageSide side;
+  final VoidCallback onGrow;
+
+  /// Null when there is no white space left to remove on this side.
+  final VoidCallback? onShrink;
+}
+
 /// Soft red pill for deleting a page or slide.
 class _DeleteButton extends StatelessWidget {
   const _DeleteButton({required this.tooltip, required this.onPressed});
