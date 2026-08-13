@@ -1013,6 +1013,46 @@ class _ResizeButtons extends StatelessWidget {
 
   /// Null when there is no white space left to remove on this side.
   final VoidCallback? onShrink;
+
+  @override
+  Widget build(BuildContext context) {
+    final vertical = side == PageSide.left || side == PageSide.right;
+    final divider = vertical
+        ? const SizedBox(width: 16, child: Divider(height: 1, thickness: 1))
+        : const SizedBox(
+            height: 16,
+            child: VerticalDivider(width: 1, thickness: 1),
+          );
+    final children = [
+      _PillSegment(
+        icon: Icons.add,
+        tooltip: 'Add space (${side.name})',
+        onTap: onGrow,
+      ),
+      divider,
+      _PillSegment(
+        icon: Icons.remove,
+        tooltip: 'Remove space (${side.name})',
+        onTap: onShrink,
+      ),
+    ];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _controlBorder, width: 0.5),
+        boxShadow: _controlShadow,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        clipBehavior: Clip.antiAlias,
+        borderRadius: BorderRadius.circular(14),
+        child: vertical
+            ? Column(mainAxisSize: MainAxisSize.min, children: children)
+            : Row(mainAxisSize: MainAxisSize.min, children: children),
+      ),
+    );
+  }
 }
 
 /// Soft red pill for deleting a page or slide.
