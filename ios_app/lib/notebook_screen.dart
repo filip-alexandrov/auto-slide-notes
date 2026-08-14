@@ -1055,6 +1055,33 @@ class _ResizeButtons extends StatelessWidget {
   }
 }
 
+class _PillSegment extends StatelessWidget {
+  const _PillSegment({required this.icon, required this.tooltip, this.onTap});
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox.square(
+          dimension: 28,
+          child: Icon(
+            icon,
+            size: 16,
+            color: enabled ? const Color(0xFF3A3A3C) : const Color(0x33000000),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Soft red pill for deleting a page or slide.
 class _DeleteButton extends StatelessWidget {
   const _DeleteButton({required this.tooltip, required this.onPressed});
