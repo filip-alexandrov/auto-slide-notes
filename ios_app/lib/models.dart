@@ -233,6 +233,34 @@ class NotePage extends ChangeNotifier {
   }
 }
 
+/// A page in the note's recycle bin, with where it used to be.
+class TrashedPage {
+  TrashedPage({
+    required this.page,
+    required this.deletedAt,
+    required this.index,
+  });
+
+  final NotePage page;
+  final DateTime deletedAt;
+
+  /// Position the page had, used when it is restored.
+  final int index;
+
+  Map<String, dynamic> toJson() => {
+    'page': page.toJson(),
+    'deletedAt': deletedAt.toIso8601String(),
+    'index': index,
+  };
+
+  factory TrashedPage.fromJson(Map<String, dynamic> json) => TrashedPage(
+    page: NotePage.fromJson(json['page'] as Map<String, dynamic>),
+    deletedAt:
+        DateTime.tryParse(json['deletedAt'] as String? ?? '') ?? DateTime.now(),
+    index: json['index'] as int? ?? 0,
+  );
+}
+
 class NoteDocument extends ChangeNotifier {
   NoteDocument({
     required this.title,
