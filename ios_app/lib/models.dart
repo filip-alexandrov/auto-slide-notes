@@ -274,6 +274,11 @@ class NoteDocument extends ChangeNotifier {
   String title;
   final List<NotePage> pages;
 
+  /// Deleted pages, newest first. Kept (with their slide images) until
+  /// restored or deleted permanently.
+  final List<TrashedPage> trash;
+  DateTime created;
+
   void appendPage(NotePage page) {
     pages.add(page);
     notifyListeners();
@@ -287,6 +292,39 @@ class NoteDocument extends ChangeNotifier {
   void insertPage(int index, NotePage page) {
     pages.insert(index.clamp(0, pages.length), page);
     notifyListeners();
+  }
+
+  /// Moves [page] to the recycle bin.
+  void trashPage(NotePage page) {
+    final index = pages.indexOf(page);
+    if (index < 0) return;
+    pages.removeAt(index);
+    trash.insert(
+      0,
+      TrashedPage(page: page, deletedAt: DateTime.now(), index: index),
+    );
+    notifyListeners();
+  }
+
+  /// Puts a page from the bin back where it was (or at the end if the note
+  /// got shorter since).
+  void restorePage(TrashedPage entry) {
+    if (!trash.remove(entry)) return;
+    pages.insert(entry.index.clamp(0, pages.length), entry.page);
+    notifyListeners();
+  }
+
+  /// Bin entry holding [page], if any.
+  TrashedPage? trashEntryFor(NotePage page) {
+    for (final t in trash) {
+      if (identical(t.page, page)) return t;
+    }
+    return null;
+  }
+
+  /// Removes [entry] from the bin for good.
+  void purge(TrashedPage entry) {
+    if (trash.remove(entry)) notifyListeners();
   }
 
   /// Signals that page contents changed (used to trigger autosave).
