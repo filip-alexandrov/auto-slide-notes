@@ -327,6 +327,14 @@ class NoteDocument extends ChangeNotifier {
     if (trash.remove(entry)) notifyListeners();
   }
 
+  /// Image files still needed by pages or bin entries.
+  Set<String> get referencedImages => {
+    for (final p in pages)
+      if (p.imageFile != null) p.imageFile!,
+    for (final t in trash)
+      if (t.page.imageFile != null) t.page.imageFile!,
+  };
+
   /// Signals that page contents changed (used to trigger autosave).
   void markDirty() => notifyListeners();
 
