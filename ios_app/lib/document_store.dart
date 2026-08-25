@@ -203,6 +203,55 @@ class DocumentStore {
     return NoteDocument(title: 'Notes');
   }
 
+  /// Slide images that no page or bin entry uses (pages deleted before the
+  /// recycle bin existed) are put into the bin so they can be restored.
+  Future<void> _collectStrayImages(NoteDocument doc) async {
+    final used = doc.referencedImages;
+    final stray = <(DateTime, File)>[];
+    await for (final e in imagesDir.list()) {
+      if (e is! File) continue;
+      final name = e.uri.pathSegments.last;
+      if (!name.endsWith('.png') || used.contains(name)) continue;
+      stray.add((await e.lastModified(), e));
+    }
+    stray.sort((a, b) => b.$1.compareTo(a.$1)); // newest first, like the bin
+    for (final (modified, file) in stray) {
+      final size = await _pngSize(file);
+      if (size == null) continue;
+      doc.trash.add(
+        TrashedPage(
+          page: NotePage(
+            id: newPageId(),
+            aspect: size.height / size.width,
+            imageFile: file.uri.pathSegments.last,
+          ),
+          deletedAt: modified,
+          index: doc.pages.length,
+        ),
+      );
+    }
+  }
+
+  static Future<Size?> _pngSize(File f) async {
+    try {
+      final raf = await f.open();
+      final head = await raf.read(24);
+      await raf.close();
+      if (head.length < 24 || head[0] != 0x89 || head[1] != 0x50) return null;
+      final bd = ByteData.sublistView(head);
+      final w = bd.getUint32(16), h = bd.getUint32(20);
+      return w == 0 || h == 0 ? null : Size(w.toDouble(), h.toDouble());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Deletes a slide image for good (after its page left the bin).
+  Future<void> deleteImage(String name) async {
+    final f = imageFile(name);
+    if (await f.exists()) await f.delete();
+  }
+
   /// Writes the document and its library metadata. [touch] updates the
   /// modification date (not wanted for a plain rename).
   Future<void> save(NoteDocument doc, {bool touch = true}) async {
