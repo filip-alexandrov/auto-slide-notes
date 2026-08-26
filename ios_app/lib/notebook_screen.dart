@@ -1245,3 +1245,20 @@ class _PageIndicator extends StatelessWidget {
     );
   }
 }
+
+/// Lists the note's deleted pages; each can be restored to where it was or
+/// deleted for good (which also removes its slide image).
+class _RecycleBinSheet extends StatefulWidget {
+  const _RecycleBinSheet({
+    required this.doc,
+    required this.store,
+    required this.onRestored,
+  });
+
+  final NoteDocument doc;
+  final DocumentStore store;
+  final void Function(NotePage page) onRestored;
+
+  @override
+  State<_RecycleBinSheet> createState() => _RecycleBinSheetState();
+}
