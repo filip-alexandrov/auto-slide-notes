@@ -1262,3 +1262,7 @@ class _RecycleBinSheet extends StatefulWidget {
   @override
   State<_RecycleBinSheet> createState() => _RecycleBinSheetState();
 }
+
+class _RecycleBinSheetState extends State<_RecycleBinSheet> {
+  NoteDocument get doc => widget.doc;
+}
