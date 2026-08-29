@@ -1265,4 +1265,57 @@ class _RecycleBinSheet extends StatefulWidget {
 
 class _RecycleBinSheetState extends State<_RecycleBinSheet> {
   NoteDocument get doc => widget.doc;
+
+  void _restore(TrashedPage entry) {
+    doc.restorePage(entry);
+    widget.onRestored(entry.page);
+    if (doc.trash.isEmpty) {
+      Navigator.pop(context);
+    } else {
+      setState(() {});
+    }
+  }
+
+  Future<void> _purge(List<TrashedPage> entries) async {
+    for (final e in entries) {
+      doc.purge(e);
+    }
+    // Remove slide images nothing refers to any more.
+    final used = doc.referencedImages;
+    for (final e in entries) {
+      final img = e.page.imageFile;
+      if (img != null && !used.contains(img)) {
+        await widget.store.deleteImage(img);
+      }
+    }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _confirmPurge(List<TrashedPage> entries) async {
+    final all = entries.length == doc.trash.length && entries.length > 1;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(all ? 'Empty the recycle bin?' : 'Delete page forever?'),
+        content: Text(
+          all
+              ? 'All ${entries.length} pages and their slides will be deleted '
+                    'permanently.'
+              : 'This page and its slide will be deleted permanently.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red[700]),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete forever'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await _purge(entries);
+  }
 }
