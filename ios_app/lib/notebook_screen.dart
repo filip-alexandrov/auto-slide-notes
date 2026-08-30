@@ -1318,4 +1318,72 @@ class _RecycleBinSheetState extends State<_RecycleBinSheet> {
     );
     if (ok == true) await _purge(entries);
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final trash = doc.trash;
+    final height = MediaQuery.sizeOf(context).height * 0.75;
+    return SizedBox(
+      height: height,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 16, 8),
+            child: Row(
+              children: [
+                const Icon(Icons.delete_outline_rounded),
+                const SizedBox(width: 8),
+                Text(
+                  'Recycle bin',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${trash.length} page${trash.length == 1 ? '' : 's'}',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+                const Spacer(),
+                if (trash.isNotEmpty)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red[700],
+                    ),
+                    icon: const Icon(Icons.delete_forever_outlined),
+                    label: const Text('Empty bin'),
+                    onPressed: () => _confirmPurge(List.of(trash)),
+                  ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: trash.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Deleted pages appear here and can be restored.',
+                      style: TextStyle(color: Colors.black45),
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 260,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 0.78,
+                        ),
+                    itemCount: trash.length,
+                    itemBuilder: (_, i) => _BinTile(
+                      entry: trash[i],
+                      store: widget.store,
+                      onRestore: () => _restore(trash[i]),
+                      onDelete: () => _confirmPurge([trash[i]]),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
 }
