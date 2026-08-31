@@ -1387,3 +1387,22 @@ class _RecycleBinSheetState extends State<_RecycleBinSheet> {
     );
   }
 }
+
+class _BinTile extends StatelessWidget {
+  const _BinTile({
+    required this.entry,
+    required this.store,
+    required this.onRestore,
+    required this.onDelete,
+  });
+
+  final TrashedPage entry;
+  final DocumentStore store;
+  final VoidCallback onRestore;
+  final VoidCallback onDelete;
+
+  static String _date(DateTime d) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(d.day)}.${two(d.month)}.${d.year} ${two(d.hour)}:${two(d.minute)}';
+  }
+}
