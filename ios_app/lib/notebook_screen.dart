@@ -1405,4 +1405,98 @@ class _BinTile extends StatelessWidget {
     String two(int v) => v.toString().padLeft(2, '0');
     return '${two(d.day)}.${two(d.month)}.${d.year} ${two(d.hour)}:${two(d.minute)}';
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final page = entry.page;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _controlBorder, width: 0.5),
+        boxShadow: _controlShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+              child: ColoredBox(
+                color: const Color(0xFFF2F2F5),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    // Read-only preview: the page with its ink.
+                    child: IgnorePointer(
+                      child: FittedBox(
+                        child: SizedBox(
+                          width: 400,
+                          child: Material(
+                            elevation: 1,
+                            child: PageCanvas(
+                              page: page,
+                              imageFile: page.imageFile == null
+                                  ? null
+                                  : store.imageFile(page.imageFile!),
+                              settings: const ToolSettings(),
+                              onStrokeAdded: (_, _) {},
+                              onStrokesErased: (_, _) {},
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: Text(
+              '${page.slideId != null ? 'Slide' : 'Page'} · was page ${entry.index + 1}',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              'Deleted ${_date(entry.deletedAt)}',
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      alignment: Alignment.centerLeft,
+                    ),
+                    icon: const Icon(Icons.restore, size: 18),
+                    label: const Text('Restore'),
+                    onPressed: onRestore,
+                  ),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Delete forever',
+                  icon: Icon(
+                    Icons.delete_forever_outlined,
+                    color: Colors.red[700],
+                  ),
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
