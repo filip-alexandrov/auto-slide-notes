@@ -284,6 +284,24 @@ class _NotebookScreenState extends State<NotebookScreen>
     );
   }
 
+  Future<void> _openRecycleBin() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _RecycleBinSheet(
+        doc: _doc!,
+        store: _store!,
+        onRestored: (page) {
+          setState(() {});
+          final index = _doc!.pages.indexOf(page);
+          if (index >= 0) _jumpToPage(index);
+        },
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
   void _togglePenEraser() {
     if (!mounted) return;
     setState(() {
