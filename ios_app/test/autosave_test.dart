@@ -52,4 +52,50 @@ void main() {
     expect((await store.load()).pages.length, 21);
     saver.dispose();
   });
+
+  test(
+    'deleted pages survive in the recycle bin and can be restored',
+    () async {
+      final library = await NoteLibrary.open();
+      final store = library.storeFor(await library.create('Lecture'));
+      final doc = await store.load();
+      final a = page(), b = page(), c = page();
+      doc
+        ..appendPage(a)
+        ..appendPage(b)
+        ..appendPage(c);
+      doc.trashPage(b);
+      await store.save(doc);
+
+      // The bin is part of the saved note.
+      final reloaded = await store.load();
+      expect(reloaded.pages.map((p) => p.id), [a.id, c.id]);
+      expect(reloaded.trash.single.page.id, b.id);
+      expect(reloaded.trash.single.index, 1);
+
+      reloaded.restorePage(reloaded.trash.single);
+      expect(reloaded.pages.map((p) => p.id), [a.id, b.id, c.id]);
+      expect(reloaded.trash, isEmpty);
+    },
+  );
+
+  test('slide images without a page show up in the bin', () async {
+    final library = await NoteLibrary.open();
+    final store = library.storeFor(await library.create('Lecture'));
+    final doc = await store.load();
+    // A 4x2 PNG header is all the bin needs to size the page.
+    final png = [
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, //
+      0x49, 0x48, 0x44, 0x52, 0, 0, 0, 4, 0, 0, 0, 2, 8, 2, 0, 0, 0,
+    ];
+    await store.imageFile('kept.png').writeAsBytes(png);
+    await store.imageFile('lost.png').writeAsBytes(png);
+    doc.appendPage(NotePage(id: 'p', aspect: 0.5, imageFile: 'kept.png'));
+    await store.save(doc);
+
+    final reloaded = await store.load();
+    expect(reloaded.pages.single.imageFile, 'kept.png');
+    expect(reloaded.trash.single.page.imageFile, 'lost.png');
+    expect(reloaded.trash.single.page.aspect, closeTo(0.5, 1e-9));
+  });
 }
