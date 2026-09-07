@@ -30,6 +30,12 @@ const double _resizeStep = 100;
 /// Apple Pencil double-tap events from ios/Runner/AppDelegate.swift.
 const _pencilChannel = MethodChannel('ipad_notes/pencil');
 
+/// Window width from which the drawing tools fit in the same toolbar row
+/// as the title and document actions (e.g. iPad landscape).
+const double _singleRowMinWidth = 1100;
+const double _toolRowHeight = 52;
+const double _compactMaxWidth = 600;
+
 const double _minZoom = 0.5;
 const double _maxZoom = 4;
 
