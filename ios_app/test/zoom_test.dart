@@ -104,4 +104,95 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets('delete page is undoable, new pages are square', (tester) async {
+    tester.view.physicalSize = const Size(1668, 2420);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    await tester.runAsync(() async {
+      final library = await NoteLibrary.open();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: NotebookScreen(library: library, noteId: 'n1'),
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+
+    expect(find.text('1 / 3'), findsOneWidget);
+    await tester.ensureVisible(find.byTooltip('Delete page').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Delete page').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining(' / 2'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining(' / 3'), findsOneWidget);
+
+    // Deleted pages go to the recycle bin and come back from there.
+    await tester.ensureVisible(find.byTooltip('Delete page').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Delete page').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining(' / 2'), findsOneWidget);
+    await tester.tap(find.byType(PopupMenuButton<String>).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Recycle bin (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Restore'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining(' / 3'), findsOneWidget);
+
+    // On narrower screens the toolbar scrolls; bring the button into view.
+    await tester.ensureVisible(find.byTooltip('Add blank page'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Add blank page'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 4'), findsNothing); // jumped to the new page
+    final last = tester.getSize(find.byType(PageCanvas).last);
+    expect(last.width, closeTo(last.height, 1));
+
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('+ buttons stay in place when pressed', (tester) async {
+    tester.view.physicalSize = const Size(1668, 2420);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    await tester.runAsync(() async {
+      final library = await NoteLibrary.open();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: NotebookScreen(library: library, noteId: 'n1'),
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+
+    for (final side in ['top', 'left', 'right', 'bottom']) {
+      final button = find.byTooltip('Add space ($side)').first;
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      final before = tester.getCenter(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getCenter(button).dy,
+        closeTo(before.dy, 0.5),
+        reason: '$side + moved vertically',
+      );
+      expect(
+        tester.getCenter(button).dx,
+        closeTo(before.dx, 0.5),
+        reason: '$side + moved horizontally',
+      );
+    }
+
+    await tester.pumpWidget(const SizedBox());
+  });
 }
