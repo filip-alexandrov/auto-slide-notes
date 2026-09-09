@@ -195,4 +195,65 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
   });
+
+  Future<void> pumpNote(WidgetTester tester, Size logical) async {
+    tester.view.physicalSize = logical * 2;
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await tester.runAsync(() async {
+      final library = await NoteLibrary.open();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: NotebookScreen(library: library, noteId: 'n1'),
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+  }
+
+  for (final size in const [
+    Size(1366, 1024), // 12.9" landscape: one row
+    Size(1133, 744), // mini landscape: one row
+    Size(834, 1194), // 11" portrait: tools get their own row
+    Size(744, 1133), // mini portrait
+    Size(320, 1000), // Slide Over: tools scaled down
+  ]) {
+    testWidgets('toolbar shows every tool at ${size.width.toInt()} wide', (
+      tester,
+    ) async {
+      await pumpNote(tester, size);
+      expect(tester.takeException(), isNull); // no overflow
+      for (final tip in [
+        'Pen',
+        'Highlighter',
+        'Eraser',
+        'Smoothing: Medium',
+        'Undo',
+        'Redo',
+        'Add blank page',
+        'Export PDF',
+      ]) {
+        final f = find.byTooltip(tip);
+        expect(f, findsOneWidget, reason: tip);
+        final r = tester.getRect(f);
+        expect(r.left, greaterThanOrEqualTo(0), reason: tip);
+        expect(r.right, lessThanOrEqualTo(size.width), reason: tip);
+      }
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  testWidgets('last page can be scrolled until its bottom edge is at the top', (
+    tester,
+  ) async {
+    await pumpNote(tester, const Size(834, 1194));
+    final list = find.byType(ListView);
+    final listTop = tester.getTopLeft(list).dy;
+    await tester.drag(list, const Offset(0, -20000));
+    await tester.pumpAndSettle();
+    final lastPage = tester.getRect(find.byType(PageCanvas).last);
+    expect(lastPage.bottom, closeTo(listTop, 1));
+    await tester.pumpWidget(const SizedBox());
+  });
 }
