@@ -1,5 +1,46 @@
 import 'package:flutter/services.dart';
 
+/// A global keyboard shortcut: macOS virtual key code plus Carbon modifier
+/// flags, and how to display it (e.g. "⇧`").
+class HotKeySpec {
+  const HotKeySpec({
+    required this.keyCode,
+    required this.modifiers,
+    required this.label,
+  });
+
+  /// Shift + ` (kVK_ANSI_Grave with shiftKey).
+  static const defaultSpec = HotKeySpec(
+    keyCode: 50,
+    modifiers: 512,
+    label: '⇧`',
+  );
+
+  final int keyCode;
+  final int modifiers;
+  final String label;
+
+  bool get isDefault =>
+      keyCode == defaultSpec.keyCode && modifiers == defaultSpec.modifiers;
+
+  Map<String, Object> toJson() => {
+    'keyCode': keyCode,
+    'modifiers': modifiers,
+    'label': label,
+  };
+
+  static HotKeySpec? fromJson(Map<Object?, Object?>? json) {
+    if (json == null) return null;
+    final keyCode = json['keyCode'], modifiers = json['modifiers'];
+    if (keyCode is! int || modifiers is! int) return null;
+    return HotKeySpec(
+      keyCode: keyCode,
+      modifiers: modifiers,
+      label: json['label'] as String? ?? '#$keyCode',
+    );
+  }
+}
+
 /// Dart side of the native `mac_capture/screen` channel
 /// (see macos/Runner/MainFlutterWindow.swift).
 ///
