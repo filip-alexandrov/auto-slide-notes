@@ -204,6 +204,33 @@ final class ScreenChannel {
   }
 }
 
+// MARK: - Global shortcut
+
+/// A system-wide keyboard shortcut via Carbon's RegisterEventHotKey: it
+/// fires while other apps are in front and needs no Accessibility
+/// permission. Modifiers use Carbon flags (cmdKey, shiftKey, ...).
+final class GlobalHotKey {
+  var onPress: (() -> Void)?
+  private var ref: EventHotKeyRef?
+  private var handler: EventHandlerRef?
+
+  init() {
+    var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard),
+                             eventKind: UInt32(kEventHotKeyPressed))
+    InstallEventHandler(GetApplicationEventTarget(), { _, _, userData in
+      guard let userData = userData else { return noErr }
+      let me = Unmanaged<GlobalHotKey>.fromOpaque(userData).takeUnretainedValue()
+      DispatchQueue.main.async { me.onPress?() }
+      return noErr
+    }, 1, &spec, Unmanaged.passUnretained(self).toOpaque(), &handler)
+  }
+
+  deinit {
+    unregister()
+    if let h = handler { RemoveEventHandler(h) }
+  }
+}
+
 // MARK: - Region highlight
 
 /// Draws a frame around the capture region. The frame sits just *outside*
