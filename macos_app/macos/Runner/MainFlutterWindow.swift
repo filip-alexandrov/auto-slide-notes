@@ -229,6 +229,19 @@ final class GlobalHotKey {
     unregister()
     if let h = handler { RemoveEventHandler(h) }
   }
+
+  /// Returns false if the combination can't be registered (e.g. another
+  /// app already owns it).
+  func register(keyCode: UInt32, modifiers: UInt32) -> Bool {
+    unregister()
+    let id = EventHotKeyID(signature: OSType(0x4D43_4150), id: 1) // 'MCAP'
+    return RegisterEventHotKey(keyCode, modifiers, id, GetApplicationEventTarget(), 0, &ref) == noErr
+  }
+
+  func unregister() {
+    if let r = ref { UnregisterEventHotKey(r) }
+    ref = nil
+  }
 }
 
 // MARK: - Region highlight
