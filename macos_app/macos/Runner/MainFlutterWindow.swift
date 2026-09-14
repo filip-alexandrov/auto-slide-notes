@@ -244,6 +244,30 @@ final class GlobalHotKey {
   }
 }
 
+/// Captures the next key press in this app as a new shortcut. Esc without
+/// modifiers cancels. Keys other than F1–F20 need at least one modifier.
+final class HotKeyRecorder {
+  private var monitor: Any?
+  private var completion: (([String: Any]?) -> Void)?
+
+  func begin(completion: @escaping ([String: Any]?) -> Void) {
+    finish(nil)
+    self.completion = completion
+    monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+      self?.handle(event)
+      return nil // swallow the key so Flutter doesn't see it
+    }
+  }
+
+  func finish(_ value: [String: Any]?) {
+    if let m = monitor { NSEvent.removeMonitor(m) }
+    monitor = nil
+    let done = completion
+    completion = nil
+    done?(value)
+  }
+}
+
 // MARK: - Region highlight
 
 /// Draws a frame around the capture region. The frame sits just *outside*
