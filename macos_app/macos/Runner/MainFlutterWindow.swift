@@ -266,6 +266,29 @@ final class HotKeyRecorder {
     completion = nil
     done?(value)
   }
+
+  private func handle(_ event: NSEvent) {
+    let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+    var modifiers: UInt32 = 0
+    var symbols = ""
+    // Conventional macOS order: ⌃⌥⇧⌘
+    if flags.contains(.control) { modifiers |= UInt32(controlKey); symbols += "⌃" }
+    if flags.contains(.option) { modifiers |= UInt32(optionKey); symbols += "⌥" }
+    if flags.contains(.shift) { modifiers |= UInt32(shiftKey); symbols += "⇧" }
+    if flags.contains(.command) { modifiers |= UInt32(cmdKey); symbols += "⌘" }
+
+    let code = Int(event.keyCode)
+    if code == kVK_Escape && modifiers == 0 { return finish(nil) }
+    let fKey = Self.functionKeys[code]
+    if modifiers == 0 && fKey == nil {
+      NSSound.beep()
+      return
+    }
+    let name = fKey ?? Self.keyNames[code]
+      ?? event.characters(byApplyingModifiers: [])?.uppercased()
+      ?? "#\(code)"
+    finish(["keyCode": code, "modifiers": modifiers, "label": symbols + name])
+  }
 }
 
 // MARK: - Region highlight
