@@ -91,4 +91,27 @@ class ScreenCapture {
 
   static Future<void> setAlwaysOnTop(bool value) =>
       _channel.invokeMethod('setAlwaysOnTop', value);
+
+  /// Calls [onPressed] whenever the global shortcut fires.
+  static void setHotKeyHandler(VoidCallback onPressed) {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'hotKeyPressed') onPressed();
+    });
+  }
+
+  /// Makes [spec] the system-wide shortcut; false if macOS refused it
+  /// (typically because another app already uses it).
+  static Future<bool> registerHotKey(HotKeySpec spec) async =>
+      await _channel.invokeMethod<bool>('registerHotKey', spec.toJson()) ??
+      false;
+
+  static Future<void> unregisterHotKey() =>
+      _channel.invokeMethod('unregisterHotKey');
+
+  /// Waits for the user to press a new shortcut in this app. Null when
+  /// cancelled (Esc or [cancelHotKeyRecording]). The current shortcut is
+  /// unregistered meanwhile; register one again afterwards.
+  static Future<HotKeySpec?> recordHotKey() async => HotKeySpec.fromJson(
+    await _channel.invokeMethod<Map<Object?, Object?>>('recordHotKey'),
+  );
 }
