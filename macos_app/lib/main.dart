@@ -187,6 +187,45 @@ class _CaptureScreenState extends State<CaptureScreen> {
     setState(() => _hotKey = spec);
   }
 
+  Future<void> _changeHotKey() async {
+    final recording = ScreenCapture.recordHotKey();
+    var dialogOpen = true;
+    // Close the prompt as soon as a key was recorded (or Esc pressed).
+    recording.whenComplete(() {
+      if (dialogOpen && mounted) Navigator.of(context).pop();
+    });
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Press the new shortcut'),
+        content: const Text(
+          'Use at least one modifier (⌃ ⌥ ⇧ ⌘), or a function key.\n'
+          'Esc cancels.',
+        ),
+        actions: [
+          TextButton(
+            // Completes the recording with null, which closes the dialog.
+            onPressed: ScreenCapture.cancelHotKeyRecording,
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+    dialogOpen = false;
+    final spec = await recording;
+    if (spec != null) await _setHotKey(spec);
+    await _applyHotKey();
+    if (spec != null) {
+      _setStatus(
+        _hotKeyRegistered
+            ? 'Shortcut set to ${spec.label}.'
+            : '${spec.label} is already used by another app.',
+        error: !_hotKeyRegistered,
+      );
+    }
+  }
+
   Future<void> _screenshot({bool fromShortcut = false}) async {
     final region = _region;
     if (_busy) return;
