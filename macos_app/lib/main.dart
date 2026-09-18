@@ -171,6 +171,22 @@ class _CaptureScreenState extends State<CaptureScreen> {
     setState(() => _showingRegion = !_showingRegion);
   }
 
+  /// (Re)registers the shortcut according to the current settings.
+  Future<void> _applyHotKey() async {
+    var ok = true;
+    if (_hotKeyEnabled) {
+      ok = await ScreenCapture.registerHotKey(_hotKey);
+    } else {
+      await ScreenCapture.unregisterHotKey();
+    }
+    if (mounted) setState(() => _hotKeyRegistered = ok);
+  }
+
+  Future<void> _setHotKey(HotKeySpec spec) async {
+    await _prefs?.setString(_kHotKey, jsonEncode(spec.toJson()));
+    setState(() => _hotKey = spec);
+  }
+
   Future<void> _screenshot({bool fromShortcut = false}) async {
     final region = _region;
     if (_busy) return;
