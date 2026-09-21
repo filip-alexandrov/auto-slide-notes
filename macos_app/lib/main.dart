@@ -226,6 +226,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
     }
   }
 
+  Future<void> _resetHotKey() async {
+    await _setHotKey(HotKeySpec.defaultSpec);
+    await _applyHotKey();
+  }
+
   Future<void> _screenshot({bool fromShortcut = false}) async {
     final region = _region;
     if (_busy) return;
