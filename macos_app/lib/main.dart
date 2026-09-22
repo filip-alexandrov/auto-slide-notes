@@ -451,6 +451,41 @@ class _CaptureScreenState extends State<CaptureScreen> {
   }
 }
 
+/// A shortcut drawn like a key on the keyboard.
+class _KeyCap extends StatelessWidget {
+  const _KeyCap(this.label, {required this.enabled});
+
+  final String label;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.outlineVariant,
+            offset: const Offset(0, 1.5),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: enabled ? null : theme.disabledColor,
+        ),
+      ),
+    );
+  }
+}
+
 /// Shows which iPads are connected over the peer-to-peer link.
 class _LinkCard extends StatelessWidget {
   const _LinkCard({required this.link});
