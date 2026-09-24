@@ -114,4 +114,12 @@ class ScreenCapture {
   static Future<HotKeySpec?> recordHotKey() async => HotKeySpec.fromJson(
     await _channel.invokeMethod<Map<Object?, Object?>>('recordHotKey'),
   );
+
+  static Future<void> cancelHotKeyRecording() =>
+      _channel.invokeMethod('cancelHotKeyRecording');
+
+  /// A short sound for captures triggered while the app is in the
+  /// background: a "tink" on success, the alert sound on failure.
+  static Future<void> playFeedback({required bool success}) =>
+      _channel.invokeMethod('playFeedback', success);
 }
