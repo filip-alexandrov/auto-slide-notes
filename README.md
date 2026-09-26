@@ -60,3 +60,47 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 > is useful on its own: the Mac app has nowhere to send slides without the iPad, and the iPad
 > app only receives slides from the Mac app. Both apps are built from source (they are not on
 > the App Store).
+
+---
+
+## Contents
+
+- [How it works](#how-it-works)
+- [Features](#features)
+- [Complete feature list](#complete-feature-list)
+- [Requirements](#requirements)
+- [Building & installing](#building--installing)
+- [Usage](#usage)
+- [Architecture](#architecture)
+- [Project structure](#project-structure)
+- [Data storage](#data-storage)
+- [Testing](#testing)
+- [Permissions & privacy](#permissions--privacy)
+- [Known limitations](#known-limitations)
+
+---
+
+## How it works
+
+```
+┌──────────────── Mac ────────────────┐                      ┌──────────────── iPad ───────────────┐
+│  Slide Notes for Mac            │                      │  Slide Notes for iPad           │
+│                                     │   Multipeer          │                                     │
+│  1. Pick a screen region (once)     │   Connectivity       │  4. Slide is appended as the last   │
+│  2. Press Screenshot or ⇧`          │   (encrypted,        │     page of the open note           │
+│  3. PNG is queued and sent ─────────┼──────────────────────┼──▶  — your scroll position doesn't  │
+│                                     │   peer-to-peer       │     change                          │
+│                                     │   Wi-Fi / Bluetooth) │  5. Annotate with the Apple Pencil  │
+│                                     │                      │  6. Export the note as a PDF        │
+└─────────────────────────────────────┘                      └─────────────────────────────────────┘
+```
+
+1. In the Mac app you choose the part of the screen to capture once. It is remembered and works
+   on any connected display.
+2. Each time you press **Screenshot** or the shortcut, that region is captured at full Retina
+   resolution.
+3. The slide is pushed to the iPad that has a note open. If no iPad is connected, slides wait in
+   a queue and are delivered in order once one connects.
+4. The iPad adds the slide as a new page at the end of the note. **It never moves your view**:
+   if you are annotating page 3, you stay on page 3, and a small notification offers to jump to
+   the new slide.
