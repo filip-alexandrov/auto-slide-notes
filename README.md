@@ -104,3 +104,55 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 4. The iPad adds the slide as a new page at the end of the note. **It never moves your view**:
    if you are annotating page 3, you stay on page 3, and a small notification offers to jump to
    the new slide.
+
+---
+
+## Features
+
+### iPad app
+
+<p align="center">
+  <img src="docs/images/ipad-library.png" alt="The All Notes library on the iPad: three notes shown as cards with a preview of their first slide, title, last-modified date and page count, plus search, sort and a New Note button" width="900">
+  <br>
+  <em>The notes library: each note shows its first slide, including handwritten annotations,
+  with its date and page count.</em>
+</p>
+
+| Area | Details |
+|------|---------|
+| **Writing** | Apple Pencil draws and fingers scroll. Pen, highlighter and stroke eraser; 5 colors and 3 widths per tool; the Pencil's eraser end erases where supported. |
+| **Ink smoothing** | Five levels (Off → Max): steadies the line while you write and smooths each stroke once you lift the Pencil. |
+| **Pencil gestures** | Double-tap (Apple Pencil 2nd gen / Pro) switches between the eraser and the previous tool. |
+| **Navigation** | Pinch to zoom (50–400 %), centered on your fingers; drag to pan when zoomed in. Page indicator. You can scroll past the last page until its bottom edge reaches the top of the screen. |
+| **Page layout** | **+ / −** buttons on every page edge add or remove white space for notes beside a slide. − only removes white space, never part of the slide. |
+| **Pages** | Add blank pages. Delete pages (undoable) into a per-note **recycle bin**, where they can be restored or removed for good. Unlimited undo / redo. |
+| **Notes library** | Notability-style home screen: every note as a card with a preview of its first slide, title, date and page count. Search, sort (modified / created / title), create, rename, duplicate, delete. |
+| **PDF export** | Exports the note as a PDF: slides as images, ink as sharp vector paths. Opens the system share sheet. |
+| **Adaptive toolbar** | One row in landscape. In portrait or Split View the drawing tools move to a second full-width row, so nothing is hidden. |
+| **Persistence** | Autosaves continuously. The note that was open when the app closed reopens on launch. |
+
+<p align="center">
+  <img src="docs/images/ipad-page-space.png" alt="A slide page extended downwards with the + button: white space below the slide holds the handwritten note &quot;additional place to write next to slides&quot;; the + / − buttons and Delete sit under the page" width="900">
+  <br>
+  <em>Extra room for notes: <b>+</b> on any page edge adds white space next to the slide
+  (here below it), and <b>−</b> takes it away again without ever cutting into the slide.</em>
+</p>
+
+<p align="center">
+  <img src="docs/images/ipad-pdf-export.png" alt="The exported PDF opened in the iPad's PDF viewer: the annotated Agents slide with the extra white space and handwritten note below it, with a page thumbnail in the sidebar" width="900">
+  <br>
+  <em>PDF export: the same page as a PDF, with the slide, the extra space and every annotation
+  kept. The ink is exported as sharp vector paths.</em>
+</p>
+
+### Mac app
+
+| Area | Details |
+|------|---------|
+| **Region selection** | Dims every display; drag a rectangle (Esc or right-click cancels). Works across multiple monitors. |
+| **Region outline** | Optional red frame around the capture area, drawn just outside it so it never shows up in screenshots. |
+| **Capture** | Native Retina resolution. If the app's own window overlaps the region, it is hidden briefly during the capture. |
+| **Global shortcut** | **⇧`** by default; works while any app is in front. You can record another shortcut, turn it off, or reset it. A soft sound confirms each capture. |
+| **Delivery** | Slides are numbered, sent in order, and queued while no iPad is connected. |
+| **Pairing** | The first connection from an iPad must be approved; after that the iPad is trusted. Trusted iPads can be forgotten. |
+| **Window** | Optional "Keep this window on top". Shows a preview of the last screenshot. |
