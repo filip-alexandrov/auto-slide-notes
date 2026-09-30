@@ -156,3 +156,74 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 | **Delivery** | Slides are numbered, sent in order, and queued while no iPad is connected. |
 | **Pairing** | The first connection from an iPad must be approved; after that the iPad is trusted. Trusted iPads can be forgotten. |
 | **Window** | Optional "Keep this window on top". Shows a preview of the last screenshot. |
+
+---
+
+## Complete feature list
+
+### iPad app: writing & drawing
+
+- [x] **Pen** in **5 colors**: black, blue, red, green, purple
+- [x] **Highlighter** in **5 colors**: yellow, green, pink, blue, orange. It is semi-transparent
+      and always sits under pen ink, so text stays readable
+- [x] **3 stroke widths** each for the pen and the highlighter (thin, medium, thick)
+- [x] **Object eraser**: removes every whole stroke it touches, not just part of one
+- [x] **Pencil eraser end**: flipping the Apple Pencil erases on models that support it
+- [x] **Pencil double-tap** (Apple Pencil 2nd gen / Pro) switches between the eraser and the
+      previous tool
+- [x] **Ink smoothing** in 5 levels (**Off · Low · Medium · High · Max**). It steadies the line
+      while you write and smooths each stroke when you lift the Pencil. The level is remembered
+- [x] **Undo / redo** without limit, for handwriting, erasing, page resizing and page deletion
+- [x] **Draw with finger** (⋯ menu) for the Simulator or writing without a Pencil. While it is
+      on, fingers draw instead of scroll
+- [x] **Palm-friendly input**: by default only the Apple Pencil draws, and fingers scroll and zoom
+
+### iPad app: pages & navigation
+
+- [x] **Slides from the Mac** are appended as the last page, without moving your view.
+      A notice offers **Show** to jump to the new slide
+- [x] **Extra writing space**: **+ / −** on every page edge (top, bottom, left, right) add or
+      remove white space beside a slide. **−** never cuts into the slide
+- [x] **Blank pages** can be added from the toolbar
+- [x] **Delete pages**: undoable right away via the notice or undo
+- [x] **Recycle bin** per note (⋯ › Recycle bin): every deleted page is kept there, can be
+      **restored** to where it was, or **deleted forever**
+- [x] **Pinch to zoom** from 50 % to 400 %, centred on your fingers; drag to pan; tap the %
+      chip to reset
+- [x] **Page indicator** (e.g. "3 / 12") and page numbers that mark which pages are slides
+- [x] **Scroll past the last page** until its bottom edge reaches the top of the screen
+- [x] **Adaptive toolbar**: one row in landscape, a second full-width tool row in portrait or
+      Split View, so no tool is ever hidden
+
+### iPad app: organising notes
+
+- [x] **Notes library** with a card for every note: preview of the first slide, title,
+      last-modified date and page count
+- [x] **Custom note titles**: rename from the library or by tapping the title in the editor.
+      New notes are named after the date (e.g. "Note Oct 20, 2026")
+- [x] **Search** notes by title
+- [x] **Sort** by date modified, date created, or title
+- [x] **Duplicate** and **delete** notes (long-press a card, or tap ⌄ next to its title)
+- [x] **Reopens the last note** on launch
+- [x] **Autosave**: every change is saved automatically, with crash-safe writes
+
+### iPad app: export
+
+- [x] **Export to PDF** through the share sheet (save to Files, AirDrop, Mail, …). Slides are
+      embedded as images and ink as sharp vector paths, with the extra page space included
+
+### Mac app
+
+- [x] **Select a capture region** by dragging over a dimmed screen. Works on every connected
+      display; Esc or right-click cancels. The region is remembered
+- [x] **Show / hide the capture area** as a red frame that never appears in screenshots
+- [x] **Screenshot button** captures at full Retina resolution, and briefly hides the app's own
+      window if it overlaps the region
+- [x] **Global shortcut**, **⇧`** by default, works in any app
+- [x] **Custom shortcut**: record any combination with ⌃ ⌥ ⇧ ⌘, or an F-key. It can be turned
+      off or reset, and the app warns if another app already uses it
+- [x] **Sound feedback**: a soft "tink" when a slide is sent, the alert sound if it failed
+- [x] **Direct, encrypted link to the iPad**; no server or shared network needed
+- [x] **Pairing approval**: each new iPad must be allowed once. Trusted iPads can be forgotten
+- [x] **Delivery queue**: slides taken while no iPad is connected are sent in order once one is
+- [x] **Keep this window on top** option and a **preview** of the last screenshot
