@@ -227,3 +227,19 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 - [x] **Pairing approval**: each new iPad must be allowed once. Trusted iPads can be forgotten
 - [x] **Delivery queue**: slides taken while no iPad is connected are sent in order once one is
 - [x] **Keep this window on top** option and a **preview** of the last screenshot
+
+---
+
+## Requirements
+
+You need **both devices**. Slide Notes is a local, two-device setup: the Mac captures and
+the iPad receives, over a direct Multipeer connection.
+
+| | Version |
+|---|---|
+| Mac | macOS 10.15 or newer, for running the Mac app *and* for building both apps |
+| iPad | iPadOS 15 or newer; Apple Pencil recommended (finger drawing also works) |
+| Flutter | 3.41 or newer (Dart 3.11) |
+| Xcode | Current release, with command-line tools and CocoaPods |
+| Apple ID | A signing team in Xcode; a free personal team works |
+| Connectivity | Wi-Fi and/or Bluetooth switched on on both devices. They must be **near each other**, but don't need to be on the same network |
