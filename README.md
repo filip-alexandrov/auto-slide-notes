@@ -345,3 +345,58 @@ For working on the code, run the apps in debug mode with hot reload instead:
 
 With `flutter run`, macOS may attribute the Screen Recording permission to your terminal or IDE
 instead of the app.
+
+---
+
+## Usage
+
+### A typical session
+
+1. **Open the video** with the talk on the Mac (YouTube, a recorded lecture, a video call…).
+2. **Open Slide Notes on the iPad**, tap **New Note** and give it a name. Wait for the green
+   dot next to the title.
+3. **Mark the slide area on the Mac:** click **Select…** and drag a rectangle over the part of
+   the screen where the slides are shown. Do this once; the region is remembered.
+4. **Watch the talk.** Each time a new slide appears, press **⇧`** (from any app, the video
+   can stay focused). A soft *tink* confirms the capture, and the slide appears on the iPad as a
+   new page at the end of the note.
+5. **Write on the slides** with the Apple Pencil while the video keeps playing. New slides never
+   move you away from the page you're on; tap **Show** in the notice to jump to the new one.
+6. **Export** the finished note as a PDF with the PDF button in the toolbar.
+
+### Capturing slides on the Mac
+
+1. Click **Select…** and drag over the area to capture, e.g. the slide area of a Keynote,
+   PowerPoint, Zoom or browser window. It works on any connected display.
+2. Optionally click **Show capture area** to keep a frame around it (the red frame in the
+   [screenshot above](#autoslide-notes--ipad--mac)).
+3. Press **Screenshot**, or **⇧`** from any app. You hear a soft *tink* when the slide has been
+   handed over, or the alert sound if it failed.
+
+If no iPad is connected, slides are queued and delivered in order as soon as one connects
+(while the Mac app keeps running).
+
+To change the shortcut, go to **Screenshot shortcut › Change…** and press the new combination.
+It needs at least one of ⌃ ⌥ ⇧ ⌘, unless it's an F-key. The **⋯** menu next to it turns the
+shortcut off or resets it to ⇧`.
+
+> While the shortcut is set to ⇧`, that combination no longer types `~` in other apps. Turn the
+> shortcut off when you need the character, or choose a different one.
+
+### Taking notes on the iPad
+
+- **Library → note:** tap a card to open it, or **New Note** to start one. Long-press a card (or
+  tap ⌄ next to its title) to rename, duplicate or delete it. Search and sort from the top bar.
+- **Back to the library:** the **Notes** button at the top left.
+- **Rename a note:** tap its title in the toolbar.
+- **Tools:** pen, highlighter and eraser, colors, stroke widths and smoothing in the toolbar;
+  undo / redo next to them. Double-tap the Apple Pencil (2nd gen) to toggle the eraser.
+- **More space around a slide:** tap the **+** / **−** buttons on each side of a page to add or
+  remove blank space next to or below the slide.
+- **Connection dot:** grey = looking for the Mac, orange = connecting (approve the iPad on the
+  Mac), green = connected.
+- **Simulator / no Pencil:** enable **⋯ › Draw with finger**. While it is on, fingers draw
+  instead of scrolling.
+
+Slides always go into the note that is **currently open**. While you are in the library the iPad
+isn't connected, and new screenshots wait in the Mac app until you open a note.
