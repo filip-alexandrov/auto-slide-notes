@@ -243,3 +243,105 @@ the iPad receives, over a direct Multipeer connection.
 | Xcode | Current release, with command-line tools and CocoaPods |
 | Apple ID | A signing team in Xcode; a free personal team works |
 | Connectivity | Wi-Fi and/or Bluetooth switched on on both devices. They must be **near each other**, but don't need to be on the same network |
+
+---
+
+## Building & installing
+
+### 1. Prepare the toolchain
+
+```bash
+flutter --version            # 3.41 or newer
+flutter doctor               # Xcode and CocoaPods must show a green check
+```
+
+If Xcode is not installed in `/Applications` (e.g. it lives on an external drive), point the
+tools at it:
+
+```bash
+sudo xcode-select -s /path/to/Xcode.app/Contents/Developer
+# or, per command:  DEVELOPER_DIR=/path/to/Xcode.app/Contents/Developer flutter build ...
+```
+
+### 2. Clone and fetch dependencies
+
+```bash
+git clone <repository-url>
+cd ipad_mac_notetaking
+
+(cd macos_app && flutter pub get)
+(cd ios_app   && flutter pub get)
+```
+
+### 3. Set your signing team
+
+The projects are configured with the author's team, so set your own once:
+
+- **iPad app:** open `ios_app/ios/Runner.xcworkspace` in Xcode, select the *Runner* target ›
+  *Signing & Capabilities*, choose your **Team**. If the bundle identifier
+  `com.notetaking.ipadNotes` is taken for your team, change it to something unique.
+- **Mac app:** the same in `macos_app/macos/Runner.xcworkspace`. For local use, *Sign to Run
+  Locally* is enough.
+
+### 4. Build and install the Mac app
+
+```bash
+cd macos_app
+flutter build macos --release
+```
+
+The app is written to `macos_app/build/macos/Build/Products/Release/Slide Notes.app`. Copy
+it to `/Applications` and open it:
+
+```bash
+cp -R "build/macos/Build/Products/Release/Slide Notes.app" /Applications/
+open "/Applications/Slide Notes.app"
+```
+
+On the first capture macOS asks for **Screen Recording** permission (System Settings › Privacy
+& Security › Screen Recording). Enable *Slide Notes*, then quit and reopen the app. Allow
+**Local Network** access when asked.
+
+> Rebuilding changes the app's signature, so macOS may ask for Screen Recording permission
+> again after an update. If captures come back empty, remove the entry in that settings pane
+> and add the app again.
+
+### 5. Build and install the iPad app
+
+Connect the iPad with a cable (or pair it for wireless debugging in Xcode › Devices and
+Simulators), unlock it, and enable **Developer Mode** (Settings › Privacy & Security ›
+Developer Mode) if iPadOS asks for it.
+
+```bash
+cd ios_app
+flutter devices                         # note your iPad's device id
+flutter build ios --release
+flutter install -d <device-id>          # or: xcrun devicectl device install app \
+                                        #       --device <device-id> build/ios/iphoneos/Runner.app
+```
+
+On the first launch with a personal team, iPadOS blocks the app as coming from an *untrusted
+developer*. Go to **Settings › General › VPN & Device Management**, tap your Apple ID and choose
+**Trust**. Then open **Slide Notes** from the Home Screen and allow **Local Network** access.
+
+> With a free personal team the iPad app expires after **7 days**. Run step 5 again to renew it;
+> your notes are kept as long as the bundle identifier stays the same.
+
+### 6. Pair the devices
+
+1. Start **Slide Notes** on the Mac.
+2. On the iPad, open or create a note (the iPad only connects while a note is open).
+3. The Mac asks **Connect iPad?**. Choose **Allow**. This is needed only once per iPad.
+4. The Mac shows **Connected to …**, and the dot next to the note title on the iPad turns green.
+
+### Development builds
+
+For working on the code, run the apps in debug mode with hot reload instead:
+
+```bash
+(cd macos_app && flutter run -d macos)
+(cd ios_app   && flutter run -d <device-id>)    # add --release for smooth drawing
+```
+
+With `flutter run`, macOS may attribute the Screen Recording permission to your terminal or IDE
+instead of the app.
