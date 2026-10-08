@@ -400,3 +400,39 @@ shortcut off or resets it to ⇧`.
 
 Slides always go into the note that is **currently open**. While you are in the library the iPad
 isn't connected, and new screenshots wait in the Mac app until you open a note.
+
+---
+
+## Architecture
+
+```
+┌──────────── macos_app ────────────┐          ┌───────────── ios_app ─────────────┐
+│ Flutter UI (lib/main.dart)        │          │ Flutter UI                        │
+│   │                               │          │   LibraryScreen ─▶ NotebookScreen │
+│   ├─ ScreenCapture ── channel ──┐ │          │                     │   │         │
+│   └─ SlideLink ────── channel ─┐│ │          │       PageCanvas ◀──┘   └─ SlideLink
+│                                ││ │          │       (ink, eraser)          │    │
+│ Swift (MainFlutterWindow.swift)││ │          │                              │    │
+│   ├─ RegionSelector / Highlight◀┘ │          │ Swift (AppDelegate.swift)    │    │
+│   ├─ screencapture(1)             │          │   ├─ SlideLinkClient ◀───────┘    │
+│   ├─ GlobalHotKey (Carbon)        │          │   │   (MCNearbyServiceBrowser)    │
+│   └─ SlideLinkHost ◀──────────────┘          │   └─ PencilTap (double-tap)       │
+│       (MCNearbyServiceAdvertiser) │          │                                   │
+└───────────────┬───────────────────┘          │ DocumentStore / NoteLibrary       │
+                │   MCSession (encryption      │   (JSON + PNG on disk, autosave)  │
+                └──── required), PNG resources ▶──────────────────────────────────┘
+```
+
+**Key design decisions**
+
+- **Peer-to-peer link.** The Mac advertises the service `notes-slides`; an iPad with an open note
+  browses for it and joins. Encryption is required on the session. Slides are sent as PNG
+  resources, one at a time, so pages arrive in capture order.
+- **Device-independent ink.** Strokes are stored in *page units*, where a new page is 1000 units
+  wide. Annotations stay aligned when the iPad rotates, enters Split View or zooms, and when the
+  note is exported to PDF.
+- **Stable scroll position.** The page list uses exact item extents. Appending a page never shifts
+  what's on screen, and zoom keeps the point under your fingers fixed.
+- **Native where it matters.** Screen capture uses `/usr/sbin/screencapture -R` with global
+  top-left coordinates (multi-monitor safe). The shortcut uses Carbon's `RegisterEventHotKey`,
+  which needs no Accessibility permission.
