@@ -436,3 +436,35 @@ isn't connected, and new screenshots wait in the Mac app until you open a note.
 - **Native where it matters.** Screen capture uses `/usr/sbin/screencapture -R` with global
   top-left coordinates (multi-monitor safe). The shortcut uses Carbon's `RegisterEventHotKey`,
   which needs no Accessibility permission.
+
+---
+
+## Project structure
+
+```
+.
+├── ios_app/                      Slide Notes for iPad (Flutter, iPadOS)
+│   ├── lib/
+│   │   ├── main.dart             App entry point
+│   │   ├── library_screen.dart   Notes library (grid of note cards)
+│   │   ├── notebook_screen.dart  Note editor: toolbar, pages, zoom, undo/redo, recycle bin
+│   │   ├── page_canvas.dart      Drawing surface for one page (pen, highlighter, eraser)
+│   │   ├── ink.dart              Ink stabilizer, smoothing levels, curve tracing
+│   │   ├── models.dart           Note, page and stroke models (+ JSON)
+│   │   ├── document_store.dart   On-disk library, autosave, thumbnails
+│   │   ├── slide_link.dart       Receives slides from the Mac
+│   │   └── pdf_export.dart       PDF export (vector ink over slide images)
+│   ├── ios/Runner/AppDelegate.swift   Multipeer client, Pencil double-tap
+│   └── test/                     Unit and widget tests
+│
+├── macos_app/                    Slide Notes for Mac (Flutter, macOS)
+│   ├── lib/
+│   │   ├── main.dart             UI: region, shortcut, connection, screenshot
+│   │   ├── screen_capture.dart   Channel to native capture and hotkey APIs
+│   │   └── slide_link.dart       Channel to the Multipeer host
+│   └── macos/Runner/MainFlutterWindow.swift
+│                                 Region selector, capture, global hotkey, Multipeer host
+│
+├── docs/images/                  Screenshots used in this README
+└── README.md
+```
