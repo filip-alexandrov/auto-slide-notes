@@ -468,3 +468,48 @@ isn't connected, and new screenshots wait in the Mac app until you open a note.
 ├── docs/images/                  Screenshots used in this README
 └── README.md
 ```
+
+---
+
+## Data storage
+
+All data stays on the devices.
+
+**iPad**: one folder per note in the app's `Documents/notes/<note-id>/`:
+
+| File | Content |
+|------|---------|
+| `document.json` | Pages (size, slide placement), strokes (in page units), recycle bin |
+| `meta.json` | Title, created / modified dates, page count — read by the library |
+| `thumbnail.png` | Preview of the first slide, refreshed when you leave the note |
+| `images/` | Slide images as received from the Mac |
+
+Writes are atomic (write to a temp file, then rename), so a crash never leaves a half-written
+note. A notebook from the earlier single-document version (`Documents/notebook/`) is moved into
+the library automatically on first launch.
+
+**Mac**: the capture region, shortcut, trusted iPads and slide counter are kept in the app's
+user defaults. Queued slides are held in memory only.
+
+---
+
+## Testing
+
+```bash
+cd ios_app
+flutter analyze
+flutter test
+```
+
+The iPad test suite covers the data model (page resizing, JSON round-trips, ink smoothing),
+library operations (migration, create / rename / duplicate / delete, thumbnails), autosave,
+slide import, and widget behaviour (pinch zoom, undo, page resizing, toolbar layout at different
+iPad widths, scrolling past the last page).
+
+For the Mac app:
+
+```bash
+cd macos_app
+flutter analyze
+flutter build macos --debug
+```
