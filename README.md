@@ -513,3 +513,32 @@ cd macos_app
 flutter analyze
 flutter build macos --debug
 ```
+
+---
+
+## Permissions & privacy
+
+| Permission | App | Why |
+|------------|-----|-----|
+| Screen Recording | Mac | Capture the selected screen region |
+| Local Network | Mac, iPad | Discover and connect to the other device |
+
+- The connection is **end-to-end encrypted**, and a new iPad must be **approved on the Mac**
+  before it receives anything.
+- Nothing leaves the two devices: there is no cloud service, account or analytics.
+- The Mac app's App Sandbox is disabled because it runs the system `screencapture` tool.
+
+---
+
+## Known limitations
+
+- **One note receives slides at a time:** the note that is open on the iPad.
+- **Mac queue is in memory.** Slides taken while no iPad is connected are lost if the Mac app
+  quits before they are delivered.
+- **Shortcut conflicts.** A shortcut already registered by another app can't be used; the app
+  says so and asks for another one.
+- **Local only, Mac + iPad required.** The two devices must be near each other; there is no
+  cloud sync, remote access or web version. The note app targets iPadOS only and the capture
+  app targets macOS only.
+- **Not on the App Store.** Both apps are built and installed from source; with a free
+  personal team the iPad build has to be reinstalled every 7 days.
