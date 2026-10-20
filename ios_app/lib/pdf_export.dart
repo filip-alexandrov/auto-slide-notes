@@ -14,7 +14,7 @@ const double _pdfPageWidth = 595.28;
 
 /// Renders the notebook to a PDF: slide images as-is, ink as vector paths.
 Future<File> exportPdf(NoteDocument doc, DocumentStore store) async {
-  final pdf = pw.Document(title: doc.title, creator: 'Slide Notes');
+  final pdf = pw.Document(title: doc.title, creator: 'AutoSlide Notes');
 
   for (final page in doc.pages) {
     final height = _pdfPageWidth * page.aspect;

@@ -1,4 +1,4 @@
-# Slide Notes — iPad & Mac
+# AutoSlide Notes — iPad & Mac
 
 **Take handwritten notes directly on the slides of any presentation video, even when the
 slides were never published. One keyboard shortcut is all it takes.**
@@ -10,7 +10,7 @@ downloadable slides. If you want to take notes on top of them, you're left pausi
 taking screenshots, cropping them and importing them into a notes app, one slide at a time.
 Over a talk with tens or even hundreds of slides, that quickly becomes too tedious to keep up.
 
-Slide Notes removes all of that. You mark the part of the screen where the presentation is shown
+AutoSlide Notes removes all of that. You mark the part of the screen where the presentation is shown
 **once**. From then on, pressing a **single shortcut** while you watch captures exactly that area
 and puts it on your iPad as a new page, ready to write on with the Apple Pencil. There's nothing
 to crop, save or import, and you never have to leave the video.
@@ -24,13 +24,13 @@ It's made for:
 
 ### What it is
 
-Slide Notes is two apps that work together:
+AutoSlide Notes is two apps that work together:
 
-- **Slide Notes for Mac** (macOS) takes a screenshot of a region of the screen you choose,
+- **AutoSlide Notes for Mac** (macOS) takes a screenshot of a region of the screen you choose,
   typically the slide area of a video player, but also a video call or a live presentation. You
   trigger it with one button or a system-wide keyboard shortcut (**⇧`** by default) without
   leaving the video.
-- **Slide Notes for iPad** (iPadOS) is a notebook for the Apple Pencil. Every screenshot from
+- **AutoSlide Notes for iPad** (iPadOS) is a notebook for the Apple Pencil. Every screenshot from
   the Mac shows up right away as a new page at the end of the open note. You annotate it, and you
   can export the whole note as a PDF.
 
@@ -38,9 +38,9 @@ The apps talk to each other directly over Apple's Multipeer Connectivity (the te
 AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network needed.
 
 <p align="center">
-  <img src="docs/images/mac-capture.png" alt="Slide Notes for Mac next to a lecture video in the browser: the red frame marks the selected capture region around the slide, and the Screenshot button with the ⇧` shortcut sends it to the iPad" width="900">
+  <img src="docs/images/mac-capture.png" alt="AutoSlide Notes for Mac next to a lecture video in the browser: the red frame marks the selected capture region around the slide, and the Screenshot button with the ⇧` shortcut sends it to the iPad" width="900">
   <br>
-  <em>Slide Notes for Mac (left) with the capture region outlined on a lecture video (right).
+  <em>AutoSlide Notes for Mac (left) with the capture region outlined on a lecture video (right).
   Press <b>Screenshot</b> or <b>⇧`</b> to send the framed slide to the iPad.</em>
 </p>
 
@@ -54,7 +54,7 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 > capture, global hotkey, peer-to-peer link, Apple Pencil double-tap) are implemented natively
 > in Swift.
 
-> **Local only — you need both a Mac and an iPad.** Slide Notes currently works only
+> **Local only — you need both a Mac and an iPad.** AutoSlide Notes currently works only
 > between a Mac and an iPad that are physically near each other, connected directly over
 > Multipeer Connectivity. There is no cloud sync, web version or remote access, and neither app
 > is useful on its own: the Mac app has nowhere to send slides without the iPad, and the iPad
@@ -84,7 +84,7 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 
 ```
 ┌──────────────── Mac ────────────────┐                      ┌──────────────── iPad ───────────────┐
-│  Slide Notes for Mac            │                      │  Slide Notes for iPad           │
+│  AutoSlide Notes for Mac            │                      │  AutoSlide Notes for iPad           │
 │                                     │   Multipeer          │                                     │
 │  1. Pick a screen region (once)     │   Connectivity       │  4. Slide is appended as the last   │
 │  2. Press Screenshot or ⇧`          │   (encrypted,        │     page of the open note           │
@@ -232,7 +232,7 @@ AirDrop). There's no server, no IP address to enter and no shared Wi-Fi network 
 
 ## Requirements
 
-You need **both devices**. Slide Notes is a local, two-device setup: the Mac captures and
+You need **both devices**. AutoSlide Notes is a local, two-device setup: the Mac captures and
 the iPad receives, over a direct Multipeer connection.
 
 | | Version |
@@ -290,16 +290,16 @@ cd macos_app
 flutter build macos --release
 ```
 
-The app is written to `macos_app/build/macos/Build/Products/Release/Slide Notes.app`. Copy
+The app is written to `macos_app/build/macos/Build/Products/Release/AutoSlide Notes.app`. Copy
 it to `/Applications` and open it:
 
 ```bash
-cp -R "build/macos/Build/Products/Release/Slide Notes.app" /Applications/
-open "/Applications/Slide Notes.app"
+cp -R "build/macos/Build/Products/Release/AutoSlide Notes.app" /Applications/
+open "/Applications/AutoSlide Notes.app"
 ```
 
 On the first capture macOS asks for **Screen Recording** permission (System Settings › Privacy
-& Security › Screen Recording). Enable *Slide Notes*, then quit and reopen the app. Allow
+& Security › Screen Recording). Enable *AutoSlide Notes*, then quit and reopen the app. Allow
 **Local Network** access when asked.
 
 > Rebuilding changes the app's signature, so macOS may ask for Screen Recording permission
@@ -322,14 +322,14 @@ flutter install -d <device-id>          # or: xcrun devicectl device install app
 
 On the first launch with a personal team, iPadOS blocks the app as coming from an *untrusted
 developer*. Go to **Settings › General › VPN & Device Management**, tap your Apple ID and choose
-**Trust**. Then open **Slide Notes** from the Home Screen and allow **Local Network** access.
+**Trust**. Then open **AutoSlide Notes** from the Home Screen and allow **Local Network** access.
 
 > With a free personal team the iPad app expires after **7 days**. Run step 5 again to renew it;
 > your notes are kept as long as the bundle identifier stays the same.
 
 ### 6. Pair the devices
 
-1. Start **Slide Notes** on the Mac.
+1. Start **AutoSlide Notes** on the Mac.
 2. On the iPad, open or create a note (the iPad only connects while a note is open).
 3. The Mac asks **Connect iPad?**. Choose **Allow**. This is needed only once per iPad.
 4. The Mac shows **Connected to …**, and the dot next to the note title on the iPad turns green.
@@ -353,7 +353,7 @@ instead of the app.
 ### A typical session
 
 1. **Open the video** with the talk on the Mac (YouTube, a recorded lecture, a video call…).
-2. **Open Slide Notes on the iPad**, tap **New Note** and give it a name. Wait for the green
+2. **Open AutoSlide Notes on the iPad**, tap **New Note** and give it a name. Wait for the green
    dot next to the title.
 3. **Mark the slide area on the Mac:** click **Select…** and drag a rectangle over the part of
    the screen where the slides are shown. Do this once; the region is remembered.
@@ -443,7 +443,7 @@ isn't connected, and new screenshots wait in the Mac app until you open a note.
 
 ```
 .
-├── ios_app/                      Slide Notes for iPad (Flutter, iPadOS)
+├── ios_app/                      AutoSlide Notes for iPad (Flutter, iPadOS)
 │   ├── lib/
 │   │   ├── main.dart             App entry point
 │   │   ├── library_screen.dart   Notes library (grid of note cards)
@@ -457,7 +457,7 @@ isn't connected, and new screenshots wait in the Mac app until you open a note.
 │   ├── ios/Runner/AppDelegate.swift   Multipeer client, Pencil double-tap
 │   └── test/                     Unit and widget tests
 │
-├── macos_app/                    Slide Notes for Mac (Flutter, macOS)
+├── macos_app/                    AutoSlide Notes for Mac (Flutter, macOS)
 │   ├── lib/
 │   │   ├── main.dart             UI: region, shortcut, connection, screenshot
 │   │   ├── screen_capture.dart   Channel to native capture and hotkey APIs

@@ -12,7 +12,7 @@ class MainFlutterWindow: NSWindow {
     self.contentViewController = flutterViewController
     self.setContentSize(NSSize(width: 460, height: 620))
     self.minSize = NSSize(width: 380, height: 480)
-    self.title = "Slide Notes"
+    self.title = "AutoSlide Notes"
     self.center()
 
     RegisterGeneratedPlugins(registry: flutterViewController)
